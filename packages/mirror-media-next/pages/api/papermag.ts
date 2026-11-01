@@ -63,6 +63,9 @@ async function fireGqlRequest(
         headers: {
           'content-type': 'application/json',
           'Cache-Control': 'no-cache',
+          // Server-side only: lets the weekly-api-server proxy allow this
+          // mutation and attach the member session. Never exposed to clients.
+          'X-Internal-Api-Key': process.env.INTERNAL_API_KEY ?? '',
         },
       },
       variables,

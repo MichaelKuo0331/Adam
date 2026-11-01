@@ -27,6 +27,12 @@ const customFetch = (uri, options) => {
   if (IS_PREVIEW_MODE) {
     // in preview, we fetch data from CMS directly
     endpoint = `${serverOrigin}/api/graphql`
+    // The internal key is only meaningful to the weekly-api-server proxy;
+    // never forward it to the preview CMS.
+    if (options?.headers) {
+      delete options.headers['X-Internal-Api-Key']
+      delete options.headers['x-internal-api-key']
+    }
   } else {
     endpoint =
       uri === DEFAULT_URI

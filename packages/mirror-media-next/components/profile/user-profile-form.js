@@ -285,8 +285,8 @@ export default function UserProfileForm({ onSaved, signInProvider }) {
           variables: { firebaseId: firebaseId },
           context: {
             uri: '/member/graphql',
-            header: {
-              authorization: accessToken,
+            headers: {
+              authorization: accessToken ? `Bearer ${accessToken}` : '',
             },
           },
         })
