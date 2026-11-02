@@ -114,6 +114,7 @@ function DesktopNavigationFlyout({ item, open }: DesktopNavigationFlyoutProps) {
                   className="h-[146px] w-55 shrink-0 object-cover"
                   height={146}
                   src={post.heroImage}
+                  unoptimized
                   width={220}
                 />
                 {/* Snap the measured 150px title box to the 4px grid. */}
