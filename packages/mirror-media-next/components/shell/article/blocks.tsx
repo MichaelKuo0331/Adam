@@ -402,6 +402,7 @@ export function Blocks({
         )
         break
       case 'unstyled':
+        if (!block.text.trim()) break
         paragraphCount = paragraphCount + 1
         nodes.push(renderPostInContent?.(block, paragraphCount))
         break
