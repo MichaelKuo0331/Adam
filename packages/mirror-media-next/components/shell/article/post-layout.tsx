@@ -379,8 +379,6 @@ export default function PostLayout(props: PostLayoutProps) {
             className="mx-2 scroll-m-20 md:mx-0"
             contents={content}
             renderPostInContent={(block, paragraphCount) => {
-              if (!block?.text) return null
-
               const textOrdinal = textParagraphs.ordinalByKey.get(block.key)
               const adKey =
                 textOrdinal === 1 || textOrdinal === 5
