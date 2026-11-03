@@ -23,6 +23,17 @@ function toImageSet(
 }
 
 /**
+ * 跟文章頁麵包屑同一套：只有一個 section 就用它（即使是行銷）；
+ * 多個時跳過 `slug === 'marketing'`。找不到非行銷的就不顯示角標。
+ */
+function pickDisplaySection(sections: ArticleListItemData['sections']) {
+  if (sections.length === 1) {
+    return sections[0]
+  }
+  return sections.find((section) => section.slug !== 'marketing')
+}
+
+/**
  * `fetchPosts` returns every field as nullable, so the shape the rows render is
  * built here rather than asserted at the call site.
  */
@@ -45,11 +56,12 @@ function toArticleListItemData(
     publishedDate: post.publishedDate ?? '',
     sections: (post.sections ?? []).map((section) => ({
       name: section.name ?? '',
+      slug: section.slug ?? null,
     })),
     slug: post.slug ?? '',
     title: post.title ?? '',
   }
 }
 
-export { toArticleListItemData, toImageSet }
+export { pickDisplaySection, toArticleListItemData, toImageSet }
 export type { ArticleListItemSource }

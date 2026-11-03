@@ -122,7 +122,9 @@ const newsCategoryPostSchema = z.object({
     .nullish(),
   id: z.string().min(1),
   publishedDate: z.string().nullish(),
-  sections: z.array(z.object({ name: z.string().nullish() })).nullish(),
+  sections: z
+    .array(z.object({ name: z.string().nullish(), slug: z.string().nullish() }))
+    .nullish(),
   slug: z.string().nullish(),
   title: z.string().nullish(),
   type: z.string().nullish(),
@@ -167,6 +169,7 @@ function toArticleListItems(
       publishedDate: post.publishedDate ?? '',
       sections: (post.sections ?? []).map((section) => ({
         name: section.name ?? '',
+        slug: section.slug ?? null,
       })),
       slug: post.slug ?? '',
       title: post.title ?? '',

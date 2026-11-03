@@ -7,6 +7,7 @@ import { DEFAULT_OG_IMAGE_URL } from '@/constants'
 import { transformTimeDataIntoDotFormat } from '@/utils'
 import type { StoryList } from '@/utils/gtm/story-list'
 
+import { pickDisplaySection } from '../list-article-data'
 import type { ArticleListItemData } from '../list-article-types'
 
 type LeadArticleProps = {
@@ -27,7 +28,7 @@ export function LeadArticle({
   priority,
   storyList,
 }: LeadArticleProps) {
-  const sectionName = item.sections?.[0]?.name
+  const sectionName = pickDisplaySection(item.sections)?.name
 
   return (
     <Link

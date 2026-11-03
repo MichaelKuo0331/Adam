@@ -29,7 +29,9 @@ function toExternalListItemData(
       : null,
     id: external.id,
     publishedDate: external.publishedDate ?? '',
-    sections: [{ name: getExternalSectionTitle(external.partner) ?? '' }],
+    sections: [
+      { name: getExternalSectionTitle(external.partner) ?? '', slug: null },
+    ],
     slug: external.slug ?? '',
     title: external.title ?? '',
     // 讓列表列的連結指向 `/external/<slug>` 而不是 `/story/<slug>`。

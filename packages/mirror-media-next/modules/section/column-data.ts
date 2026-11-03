@@ -28,7 +28,9 @@ const columnItemSchema = z.object({
     .nullish(),
   id: z.string().min(1),
   publishedDate: z.string().nullish(),
-  sections: z.array(z.object({ name: z.string().nullish() })).nullish(),
+  sections: z
+    .array(z.object({ name: z.string().nullish(), slug: z.string().nullish() }))
+    .nullish(),
   slug: z.string().nullish(),
   /** external 的圖，單一 URL */
   thumb: z.string().nullish(),
@@ -95,6 +97,7 @@ function toColumnListItems(
       publishedDate: columnItem.publishedDate ?? '',
       sections: (columnItem.sections ?? []).map((section) => ({
         name: section.name ?? '',
+        slug: section.slug ?? null,
       })),
       slug: columnItem.slug ?? '',
       title: columnItem.title ?? '',
