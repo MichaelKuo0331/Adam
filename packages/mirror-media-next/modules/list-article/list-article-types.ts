@@ -25,7 +25,11 @@ export type ArticleListItemData = {
   } | null
   id: string
   publishedDate: string
-  sections: { name: string }[]
+  /**
+   * 角標用。`slug` 用來跳過行銷分類；靜態 JSON 或 external 合成的 section
+   * 沒有 slug 時是 null，選擇時會把它當成非 marketing。
+   */
+  sections: { name: string; slug: string | null }[]
   slug: string
   title: string
   type?: string

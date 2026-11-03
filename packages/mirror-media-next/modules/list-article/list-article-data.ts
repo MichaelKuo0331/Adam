@@ -23,6 +23,17 @@ function toImageSet(
 }
 
 /**
+ * 只有一筆就用那筆。多筆時用第一個 slug 不是 `marketing` 的；
+ * 若每一筆都是 marketing，仍顯示第一筆。
+ */
+function pickDisplaySection(sections: ArticleListItemData['sections']) {
+  if (sections.length <= 1) {
+    return sections[0]
+  }
+  return sections.find((section) => section.slug !== 'marketing') ?? sections[0]
+}
+
+/**
  * `fetchPosts` returns every field as nullable, so the shape the rows render is
  * built here rather than asserted at the call site.
  */
@@ -45,11 +56,12 @@ function toArticleListItemData(
     publishedDate: post.publishedDate ?? '',
     sections: (post.sections ?? []).map((section) => ({
       name: section.name ?? '',
+      slug: section.slug ?? null,
     })),
     slug: post.slug ?? '',
     title: post.title ?? '',
   }
 }
 
-export { toArticleListItemData, toImageSet }
+export { pickDisplaySection, toArticleListItemData, toImageSet }
 export type { ArticleListItemSource }
