@@ -23,14 +23,14 @@ function toImageSet(
 }
 
 /**
- * 跟文章頁麵包屑同一套：只有一個 section 就用它（即使是行銷）；
- * 多個時跳過 `slug === 'marketing'`。找不到非行銷的就不顯示角標。
+ * 只有一筆就用那筆。多筆時用第一個 slug 不是 `marketing` 的；
+ * 若每一筆都是 marketing，仍顯示第一筆。
  */
 function pickDisplaySection(sections: ArticleListItemData['sections']) {
-  if (sections.length === 1) {
+  if (sections.length <= 1) {
     return sections[0]
   }
-  return sections.find((section) => section.slug !== 'marketing')
+  return sections.find((section) => section.slug !== 'marketing') ?? sections[0]
 }
 
 /**

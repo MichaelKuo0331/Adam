@@ -1,7 +1,31 @@
 import { DEFAULT_OG_IMAGE_URL } from '@/constants'
+import { pickDisplaySection } from '@/modules/list-article/list-article-data'
+import type { ArticleListItemData } from '@/modules/list-article/list-article-types'
 import { transformTimeDataIntoDotFormat } from '@/utils'
 
 import type { MisoLayout, MisoProduct } from './search-types'
+
+/**
+ * Miso `tags` 是重複的 `[name, slug]`。一組就只有一個 section；
+ * 多組時交給 `pickDisplaySection` 跳過 marketing。
+ */
+function sectionsFromSearchTags(
+  tags: string[] | undefined
+): ArticleListItemData['sections'] {
+  const sections: ArticleListItemData['sections'] = []
+  const values = tags ?? []
+
+  for (let index = 0; index < values.length; index += 2) {
+    const name = values[index] ?? ''
+    const slug = values[index + 1]
+    sections.push({ name, slug: slug ?? null })
+    if (slug === undefined) {
+      break
+    }
+  }
+
+  return sections
+}
 
 /**
  * 一列的 markup 要跟 `modules/list-article/components/article-list-item.tsx` 對齊。
@@ -12,7 +36,8 @@ export function renderProduct(
   _state: unknown,
   product: MisoProduct
 ) {
-  const [sectionName = ''] = product.tags ?? []
+  const sectionName =
+    pickDisplaySection(sectionsFromSearchTags(product.tags))?.name ?? ''
   const publishedDate = transformTimeDataIntoDotFormat(
     String(product.published_at)
   )
