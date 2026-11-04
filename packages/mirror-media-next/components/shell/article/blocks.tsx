@@ -134,8 +134,8 @@ export function renderTextWithLinks(
         key={`link-${start}`}
         href={href}
         data-story-list={isInternalLink ? 'referral_bottom' : undefined}
-        target="_blank"
-        rel={isInternalLink ? 'noopener' : 'noreferrer noopener'}
+        target={isInternalLink ? undefined : '_blank'}
+        rel={isInternalLink ? undefined : 'noreferrer noopener'}
         className={cn('font-mm-body text-mm-body-l', linkClassName)}
       >
         {content}

@@ -89,9 +89,9 @@ function SiteFooter() {
                 href={link.href}
                 key={link.name}
                 rel={
-                  isInternalUrl(link.href) ? 'noopener' : 'noopener noreferrer'
+                  isInternalUrl(link.href) ? undefined : 'noopener noreferrer'
                 }
-                target="_blank"
+                target={isInternalUrl(link.href) ? undefined : '_blank'}
               >
                 {link.title}
               </NextLink>

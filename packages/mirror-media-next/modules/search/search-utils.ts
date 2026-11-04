@@ -50,7 +50,6 @@ export function renderProduct(
       data-miso-product-id="${product.product_id}"
       data-story-list="search_list"
       href="${href}"
-      target="_blank"
     >
       <div class="relative mb-mm-l aspect-[330/220] w-full overflow-hidden sm:mb-0 sm:aspect-auto sm:h-[127px] sm:w-[179px] sm:shrink-0">
         <img

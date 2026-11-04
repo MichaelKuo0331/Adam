@@ -6,6 +6,7 @@ import type {
   TopicPageTopic,
   TopicSlideshowImage,
 } from '@/modules/topic/topic-types'
+import { isInternalUrl } from '@/utils'
 
 import { TopicSlideshow } from './topic-slideshow'
 
@@ -28,7 +29,8 @@ function TopicHero({ slideshowImages, topic }: TopicHeroProps) {
           aria-label={topic.name}
           className="absolute inset-0"
           href={topic.heroUrl}
-          target="_blank"
+          rel={isInternalUrl(topic.heroUrl) ? undefined : 'noopener noreferrer'}
+          target={isInternalUrl(topic.heroUrl) ? undefined : '_blank'}
         />
       ) : null}
       <Typography as="h1" className="topic-title" variant="h3">

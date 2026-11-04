@@ -25,8 +25,6 @@ type ShellNavigationItem = {
 type ShellUtilityLink = {
   href: string
   label: string
-  rel?: string
-  target?: '_blank'
 }
 
 function getCategoryHref(slug: string) {
@@ -46,12 +44,7 @@ function getCategoryHref(slug: string) {
 
 const shellUtilityLinks: readonly ShellUtilityLink[] = [
   { href: '/podcasts', label: 'PODCAST' },
-  {
-    href: '/magazine',
-    label: '動態雜誌',
-    rel: 'noopener',
-    target: '_blank',
-  },
+  { href: '/magazine', label: '動態雜誌' },
   { href: '/papermag', label: '訂閱紙本雜誌' },
 ]
 

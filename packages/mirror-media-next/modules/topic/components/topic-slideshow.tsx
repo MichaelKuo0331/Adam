@@ -17,6 +17,7 @@ import {
 import { DEFAULT_OG_IMAGE_URL } from '@/constants'
 import { toTopicImageSet } from '@/modules/topic/topic-data'
 import type { TopicSlideshowImage } from '@/modules/topic/topic-types'
+import { isInternalUrl } from '@/utils'
 
 type TopicSlideshowProps = {
   images: TopicSlideshowImage[]
@@ -100,7 +101,19 @@ function TopicSlideshow({ images }: TopicSlideshowProps) {
         {images.map((item) => (
           <SwiperSlide key={item.id}>
             {item.topicKeywords?.startsWith('@-') ? (
-              <NextLink href={item.topicKeywords.slice(2)} target="_blank">
+              <NextLink
+                href={item.topicKeywords.slice(2)}
+                rel={
+                  isInternalUrl(item.topicKeywords.slice(2))
+                    ? undefined
+                    : 'noopener noreferrer'
+                }
+                target={
+                  isInternalUrl(item.topicKeywords.slice(2))
+                    ? undefined
+                    : '_blank'
+                }
+              >
                 <CustomImage
                   alt={item.name ?? ''}
                   defaultImage={DEFAULT_OG_IMAGE_URL}

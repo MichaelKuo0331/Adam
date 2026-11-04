@@ -39,7 +39,6 @@ export function LeadArticle({
           ? `/external/${item.slug}`
           : `/story/${item.slug}`
       }
-      target="_blank"
     >
       <div className="relative aspect-[330/220] w-full sm:aspect-[112/80]">
         <Image

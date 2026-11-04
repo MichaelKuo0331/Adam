@@ -98,11 +98,7 @@ export default function RelatedPosts({ relateds = [] }) {
         {relateds.map((related) => (
           <li key={related.id}>
             <PostCard>
-              <Link
-                href={`/story/${related.slug}`}
-                target="_blank"
-                className="article-image"
-              >
+              <Link href={`/story/${related.slug}`} className="article-image">
                 <ImageWrapper>
                   <Image
                     images={related.heroImage?.resized}
@@ -120,9 +116,7 @@ export default function RelatedPosts({ relateds = [] }) {
               </Link>
 
               <figcaption className="article-title">
-                <Link href={`/story/${related.slug}`} target="_blank">
-                  {related.title}
-                </Link>
+                <Link href={`/story/${related.slug}`}>{related.title}</Link>
               </figcaption>
             </PostCard>
           </li>

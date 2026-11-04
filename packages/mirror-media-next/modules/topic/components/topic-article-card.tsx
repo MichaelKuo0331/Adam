@@ -30,7 +30,6 @@ function TopicArticleCard({ item, variant = 'list' }: TopicArticleCardProps) {
       className="itemWrapper mx-auto flex w-full max-w-82.5 flex-col gap-mm-m md:mx-0 md:w-70 md:max-w-70 md:shrink-0"
       data-story-list="topic_list"
       href={`/story/${item.slug}`}
-      target="_blank"
     >
       <div
         className={cn(

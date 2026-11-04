@@ -47,12 +47,7 @@ export default function Tags({ tags, tagColor = 'darkBlue', className = '' }) {
   const tagsJsx = shouldShowTags ? (
     <TagsWrapper className={className}>
       {tags.map((tag) => (
-        <Tag
-          tagColor={tagColor}
-          key={tag.id}
-          href={`/tag/${tag.slug}`}
-          target="_blank"
-        >
+        <Tag tagColor={tagColor} key={tag.id} href={`/tag/${tag.slug}`}>
           {tag.name}
         </Tag>
       ))}

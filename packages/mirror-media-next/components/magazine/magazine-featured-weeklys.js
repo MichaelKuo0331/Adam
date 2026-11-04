@@ -140,12 +140,7 @@ export default function MagazineFeatures({ features }) {
   return (
     <CardsList>
       {features.map((magazine) => (
-        <Link
-          href={getMagazineHrefFromSlug(magazine.slug)}
-          key={magazine.id}
-          rel="noopener"
-          target="_blank"
-        >
+        <Link href={getMagazineHrefFromSlug(magazine.slug)} key={magazine.id}>
           <IssueCard>
             <ImageWrapper>
               <Image

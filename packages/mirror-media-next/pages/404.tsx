@@ -96,7 +96,7 @@ export default function Custom404() {
           熱門文章
         </p>
 
-        <Link href="/subscribe" target="_blank" rel="noopener">
+        <Link href="/subscribe">
           <button
             type="button"
             className="mb-3 h-[30px] w-[78px] cursor-pointer rounded-[38px] bg-mm-base-500 text-sm font-medium text-white transition-colors duration-100 ease-in outline-none hover:bg-mm-base-400 active:border active:border-mm-base-500 active:bg-white active:text-mm-base-500 xl:mb-4"
@@ -113,8 +113,6 @@ export default function Custom404() {
             >
               <Link
                 href={`/story/${post.slug}`}
-                target="_blank"
-                rel="noopenner"
                 className="flex flex-col items-center"
               >
                 <div className="h-[139px] w-[284px] overflow-hidden rounded-[53px] xl:h-[159px] xl:w-[323px]">

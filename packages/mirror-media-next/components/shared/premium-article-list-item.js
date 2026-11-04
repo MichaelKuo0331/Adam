@@ -123,7 +123,7 @@ export default function PremiumArticleListItem({ item, section, priority }) {
     section || item.sections.find((section) => section.slug === 'member')
 
   return (
-    <ItemWrapper href={`/story/${item.slug}`} target="_blank">
+    <ItemWrapper href={`/story/${item.slug}`}>
       <ImageContainer>
         <Image
           images={item.heroImage?.resized}

@@ -132,7 +132,7 @@ export default function ExternalListItem({ item }) {
   const formattedPublishedDate = transformTimeDataIntoDotFormat(publishedDate)
 
   return (
-    <ItemWrapper href={`/external/${slug}`} target="_blank">
+    <ItemWrapper href={`/external/${slug}`}>
       <ImageContainer>
         <Image
           images={IMAGES_URL}

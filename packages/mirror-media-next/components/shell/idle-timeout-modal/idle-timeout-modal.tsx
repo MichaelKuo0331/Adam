@@ -100,11 +100,11 @@ function IdleTimeoutModal({
                       <a
                         key={index}
                         href={link.href}
-                        target="_blank"
+                        target={isInternalUrl(link.href) ? undefined : '_blank'}
                         className="grow-1"
                         rel={
                           isInternalUrl(link.href)
-                            ? 'noopener'
+                            ? undefined
                             : 'noopener noreferrer'
                         }
                       >

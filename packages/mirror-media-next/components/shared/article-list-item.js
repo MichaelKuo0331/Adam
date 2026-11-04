@@ -132,7 +132,6 @@ export default function ArticleListItem({ item, section, priority }) {
           ? `/external/${item.slug}`
           : `/story/${item.slug}`
       }
-      target="_blank"
     >
       <ImageContainer>
         <Image
