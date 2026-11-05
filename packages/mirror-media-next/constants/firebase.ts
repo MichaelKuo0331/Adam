@@ -10,6 +10,9 @@ export const FirebaseAuthError = {
   USER_DISABLED: 'auth/user-disabled',
   USER_NOT_FOUND: 'auth/user-not-found',
   WRONG_PASSWORD: 'auth/wrong-password',
+  INVALID_LOGIN_CREDENTIALS: 'auth/invalid-login-credentials',
+  INVALID_CREDENTIAL: 'auth/invalid-credential',
+  TOO_MANY_REQUESTS: 'auth/too-many-requests',
   EXPIRED_ACTION_CODE: 'auth/expired-action-code',
   INVALID_ACTION_CODE: 'auth/invalid-action-code',
 } as const

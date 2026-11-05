@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { FirebaseError } from 'firebase/app'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import styled from 'styled-components'
@@ -12,66 +13,154 @@ import {
   FormState,
   loginActions,
   loginEmail,
+  loginIsFederatedRedirectResultLoading,
   loginPassword,
 } from '../../slice/login-slice'
-import { isValidEmail, isValidPassword } from '../../utils'
+import { isCompanyEmail, isValidEmail, isValidPassword } from '../../utils'
+import { generateErrorReportInfo } from '../../utils/log/error-log'
+import { sendErrorLog } from '../../utils/log/send-log'
 import {
   errorHandler,
   getAccessToken,
   loginPageOnAuthStateChangeAction,
 } from '../../utils/membership'
-import DefaultButton from '../shared/buttons/default-button'
 import PrimaryButton from '../shared/buttons/primary-button'
 import GenericPasswordInput from '../shared/inputs/generic-password-input'
 
-import FormTitle from './form-title'
-import TextButton from './text-button'
+import EmailInput from './email-input'
 
-// following comments is required since these variables are used by comments but not codes.
-/* eslint-disable-next-line no-unused-vars */
-const { Start, Invalid } = InputState
+/** @type {Set<string>} */
+const EMAIL_PASSWORD_CREDENTIAL_ERROR_CODES = new Set([
+  FirebaseAuthError.USER_NOT_FOUND,
+  FirebaseAuthError.WRONG_PASSWORD,
+  FirebaseAuthError.INVALID_LOGIN_CREDENTIALS,
+  FirebaseAuthError.INVALID_CREDENTIAL,
+])
 
-/** @typedef {Start | Invalid } PasswordInputState */
+const InputGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  > div {
+    display: grid;
+    grid-template-rows: 48px minmax(40px, auto);
+    row-gap: 0;
+
+    > p {
+      align-self: center;
+      margin: 0;
+      padding: 8px 0;
+    }
+  }
+`
+
+// Sits in the password hint row (40px), right-aligned beside any error hint
+const ForgotPasswordLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  align-self: flex-end;
+  height: 40px;
+  margin-top: -40px;
+  color: #1d9fb8;
+  font-size: 14px;
+  line-height: 150%;
+
+  &:hover,
+  &:active {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+`
 
 const ControlGroup = styled.div`
   display: flex;
   flex-direction: column;
   row-gap: 12px;
-  margin-top: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 `
 
-export default function MainFormLoginWithPassword() {
+/**
+ * @param {Object} [props]
+ * @param {(pending: boolean) => void} [props.onSubmittingChange]
+ */
+export default function MainFormLoginWithPassword({ onSubmittingChange } = {}) {
   const dispatch = useAppDispatch()
   const email = useAppSelector(loginEmail)
   const password = useAppSelector(loginPassword)
-  const allowToSubmit = isValidEmail(email) && isValidPassword(password)
+  const isFederatedRedirectResultLoading = useAppSelector(
+    loginIsFederatedRedirectResultLoading
+  )
+  const allowToSubmit =
+    isValidEmail(email) &&
+    isValidPassword(password) &&
+    !isCompanyEmail(email) &&
+    !isFederatedRedirectResultLoading
   const { redirect } = useRedirect()
 
-  const [passwordInputState, setPasswordInputState] = useState(
-    /** @type {PasswordInputState} */ (InputState.Start)
+  const [passwordErrorCode, setPasswordErrorCode] = useState(
+    /** @type {string | null} */ (null)
   )
-  // const shouldShowErrorHint = useAppSelector(loginShouldShowErrorHint)
+  const isRateLimited =
+    passwordErrorCode === FirebaseAuthError.TOO_MANY_REQUESTS
+  const passwordErrorMessage = passwordErrorCode
+    ? isRateLimited
+      ? '登入嘗試過於頻繁，請稍後再試。'
+      : '帳號或密碼錯誤'
+    : ''
+  const passwordInputState = passwordErrorCode
+    ? InputState.Invalid
+    : InputState.Start
 
   /** @type {import('react').ChangeEventHandler<HTMLInputElement>} */
   const handlePasswordOnChange = (e) => {
     dispatch(loginActions.setPassword(e.target.value))
   }
   const [isLoading, setIsLoading] = useState(false)
+  const isSubmitting = useRef(false)
 
-  /** @type {import('react').MouseEventHandler<HTMLButtonElement>} */
-  const handleBack = () => {
-    setPasswordInputState(InputState.Start)
-    dispatch(loginActions.goToStart())
-  }
+  useEffect(() => {
+    setPasswordErrorCode(null)
+  }, [email, password])
 
-  /** @type {import('react').MouseEventHandler<HTMLButtonElement>} */
   const handleSubmit = async () => {
-    if (isLoading) return
+    if (!allowToSubmit || isSubmitting.current) return
+    isSubmitting.current = true
     setIsLoading(true)
+    setPasswordErrorCode(null)
+    onSubmittingChange?.(true)
 
     try {
-      const { user } = await signInWithEmailAndPassword(auth, email, password)
+      /** @type {import('firebase/auth').UserCredential} */
+      let credential
+      try {
+        credential = await signInWithEmailAndPassword(auth, email, password)
+      } catch (error) {
+        if (
+          error instanceof FirebaseError &&
+          error.code === FirebaseAuthError.TOO_MANY_REQUESTS
+        ) {
+          setPasswordErrorCode(error.code)
+          try {
+            sendErrorLog(generateErrorReportInfo(error, { userEmail: email }))
+          } catch (loggingError) {
+            console.error(
+              'Unable to report Firebase sign-in rate limit.',
+              loggingError
+            )
+          }
+          return
+        }
+        if (
+          error instanceof FirebaseError &&
+          EMAIL_PASSWORD_CREDENTIAL_ERROR_CODES.has(error.code)
+        ) {
+          setPasswordErrorCode(error.code)
+          return
+        }
+        throw error
+      }
+
+      const { user } = credential
       if (!user) {
         throw new Error('Unable to get Firebase User')
       }
@@ -84,32 +173,35 @@ export default function MainFormLoginWithPassword() {
 
       redirect()
     } catch (e) {
-      if (
-        e instanceof FirebaseError &&
-        e.code === FirebaseAuthError.WRONG_PASSWORD
-      ) {
-        setPasswordInputState(InputState.Invalid)
-      } else {
-        errorHandler(e, {
-          userEmail: email,
-        })
-        dispatch(loginActions.changeState(FormState.LoginFail))
-      }
+      errorHandler(e instanceof Error ? e : new Error(String(e)), {
+        userEmail: email,
+      })
+      dispatch(loginActions.changeState(FormState.LoginFail))
     } finally {
+      isSubmitting.current = false
       setIsLoading(false)
+      onSubmittingChange?.(false)
     }
   }
 
   return (
     <>
-      <FormTitle>輸入密碼</FormTitle>
-      <GenericPasswordInput
-        value={password}
-        placeholder="密碼大於 6 位數"
-        invalidMessage="密碼錯誤，請重新再試"
-        state={passwordInputState}
-        onChange={handlePasswordOnChange}
-      />
+      <InputGroup>
+        <EmailInput />
+        <GenericPasswordInput
+          value={password}
+          placeholder="請輸入密碼"
+          invalidMessage={passwordErrorMessage}
+          showInvalidBorder={!isRateLimited}
+          state={passwordInputState}
+          onChange={handlePasswordOnChange}
+        />
+        <ForgotPasswordLink
+          href={{ pathname: '/recover-password', query: { email } }}
+        >
+          忘記密碼？
+        </ForgotPasswordLink>
+      </InputGroup>
       <ControlGroup>
         <PrimaryButton
           isLoading={isLoading}
@@ -118,11 +210,7 @@ export default function MainFormLoginWithPassword() {
         >
           登入會員
         </PrimaryButton>
-        <DefaultButton onClick={handleBack}>回上一步</DefaultButton>
       </ControlGroup>
-      <TextButton href={{ pathname: '/recover-password', query: { email } }}>
-        忘記密碼？
-      </TextButton>
     </>
   )
 }
