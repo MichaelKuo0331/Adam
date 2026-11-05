@@ -29,12 +29,19 @@ const SecondaryText = styled.p`
   margin-bottom: 32px;
 `
 
+const Controls = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`
+
 /**
  * @param {Object} props
  * @param {string} props.primaryText
  * @param {import('react').MouseEventHandler<HTMLButtonElement>} props.onBack
+ * @param {import('react').MouseEventHandler<HTMLButtonElement>} [props.onLogin]
  */
-export default function GenericFailed({ primaryText, onBack }) {
+export default function GenericFailed({ primaryText, onBack, onLogin }) {
   return (
     <Main>
       <FormWrapper>
@@ -50,7 +57,10 @@ export default function GenericFailed({ primaryText, onBack }) {
           </StyledLink>{' '}
           / 致電 (02)6633-3966 由專人為您服務。
         </SecondaryText>
-        <DefaultButton onClick={onBack}>回上一步</DefaultButton>
+        <Controls>
+          <DefaultButton onClick={onBack}>回上一步</DefaultButton>
+          {onLogin && <DefaultButton onClick={onLogin}>前往登入</DefaultButton>}
+        </Controls>
       </FormWrapper>
     </Main>
   )

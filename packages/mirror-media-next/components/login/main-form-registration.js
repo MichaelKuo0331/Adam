@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { FirebaseError } from 'firebase/app'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import styled from 'styled-components'
@@ -11,55 +11,76 @@ import {
   FormState,
   loginActions,
   loginEmail,
+  loginIsFederatedRedirectResultLoading,
   loginPassword,
 } from '../../slice/login-slice'
-import { isValidEmail, isValidPassword } from '../../utils'
+import { isCompanyEmail, isValidEmail } from '../../utils'
 import {
   errorHandler,
   getAccessToken,
   loginPageOnAuthStateChangeAction,
 } from '../../utils/membership'
-import DefaultButton from '../shared/buttons/default-button'
 import PrimaryButton from '../shared/buttons/primary-button'
-import CenteredHint from '../shared/centered-hint'
+import Hint from '../shared/hint'
 
 import FormTitle from './form-title'
 import RegistartionEmailInput from './registration-email-input'
-import RegistrationPasswordInput from './registration-password-input'
-import ReminderSection from './reminder-section'
+import RegistrationPasswordInput, {
+  isValidRegistrationPassword,
+} from './registration-password-input'
 
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
-  row-gap: 16px;
+
+  > div {
+    display: grid;
+    grid-template-rows: 48px minmax(40px, auto);
+    row-gap: 0;
+
+    > p {
+      align-self: center;
+      margin: 0;
+      padding: 8px 0;
+    }
+  }
+`
+
+const RegistrationHint = styled(Hint)`
+  margin-bottom: 16px;
 `
 
 const ControlGroup = styled.div`
   display: flex;
   flex-direction: column;
   row-gap: 12px;
-  margin-top: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 `
 
-export default function MainFormRegistration() {
+/**
+ * @param {Object} [props]
+ * @param {(pending: boolean) => void} [props.onSubmittingChange]
+ */
+export default function MainFormRegistration({ onSubmittingChange } = {}) {
   const dispatch = useAppDispatch()
   const [isLoading, setIsLoading] = useState(false)
-  const [isDuplicateEmailMember, setIsDuplicateEmailMember] = useState(false)
+  const isSubmitting = useRef(false)
   const email = useAppSelector(loginEmail)
   const password = useAppSelector(loginPassword)
-  const allowToSubmit = isValidEmail(email) && isValidPassword(password)
+  const isFederatedRedirectResultLoading = useAppSelector(
+    loginIsFederatedRedirectResultLoading
+  )
+  const allowToSubmit =
+    isValidEmail(email) &&
+    isValidRegistrationPassword(password) &&
+    !isCompanyEmail(email) &&
+    !isFederatedRedirectResultLoading
 
-  /** @type {import('react').MouseEventHandler<HTMLButtonElement>} */
-  const handleBack = () => {
-    setIsDuplicateEmailMember(false)
-    dispatch(loginActions.goToStart())
-  }
-
-  /** @type {import('react').MouseEventHandler<HTMLButtonElement>} */
   const handleSubmit = async () => {
-    if (isLoading) return
+    if (!allowToSubmit || isSubmitting.current) return
+    isSubmitting.current = true
     setIsLoading(true)
+    onSubmittingChange?.(true)
 
     try {
       const { user } = await createUserWithEmailAndPassword(
@@ -84,32 +105,35 @@ export default function MainFormRegistration() {
       dispatch(loginActions.changeState(result))
     } catch (e) {
       if (
-        e instanceof FirebaseError &&
-        e?.code === FirebaseAuthError.EMAIL_ALREADY_IN_USE
+        !(
+          e instanceof FirebaseError &&
+          e.code === FirebaseAuthError.EMAIL_ALREADY_IN_USE
+        )
       ) {
-        setIsDuplicateEmailMember(true)
-      } else {
-        errorHandler(e, { userEmail: email })
-        dispatch(loginActions.changeState(FormState.RegisterFail))
+        errorHandler(e instanceof Error ? e : new Error(String(e)), {
+          userEmail: email,
+        })
       }
+      dispatch(loginActions.changeState(FormState.RegisterFail))
     } finally {
+      isSubmitting.current = false
       setIsLoading(false)
+      onSubmittingChange?.(false)
     }
   }
 
   return (
     <>
       <FormTitle>Email 註冊</FormTitle>
+      <RegistrationHint $state={InputState.Start}>
+        若要使用 Facebook、Google 或 Apple
+        帳號註冊，請切換至上方「登入」，選擇對應的第三方登入方式即可。
+      </RegistrationHint>
       <InputGroup>
         <RegistartionEmailInput />
         <RegistrationPasswordInput />
       </InputGroup>
       <ControlGroup>
-        {isDuplicateEmailMember && (
-          <CenteredHint $state={InputState.Invalid}>
-            這個 Email 已經註冊過囉
-          </CenteredHint>
-        )}
         <PrimaryButton
           isLoading={isLoading}
           disabled={!allowToSubmit}
@@ -117,9 +141,7 @@ export default function MainFormRegistration() {
         >
           註冊會員
         </PrimaryButton>
-        <DefaultButton onClick={handleBack}>回上一步</DefaultButton>
       </ControlGroup>
-      <ReminderSection />
     </>
   )
 }
