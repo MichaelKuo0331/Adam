@@ -1,15 +1,11 @@
 import NextImage from 'next/image'
 import styled, { css } from 'styled-components'
 
-import { useAppSelector } from '../../hooks/useRedux'
 import DesktopBanner from '../../public/images-next/login/banner-desktop.png'
 import MobileBanner from '../../public/images-next/login/banner-mobile.png'
 import TabletBanner from '../../public/images-next/login/banner-tablet.png'
-import { FormMode, loginFormMode } from '../../slice/login-slice'
 
 import FormWrapper from './form-wrapper'
-import MainFormLoginWithPassword from './main-form-login-with-password'
-import MainFormRegistration from './main-form-registration'
 import MainFormStart from './main-form-start'
 
 const Main = styled.main`
@@ -97,20 +93,6 @@ const CustomFormWrapper = styled(FormWrapper)`
 `
 
 export default function MainForm() {
-  const formMode = useAppSelector(loginFormMode)
-
-  const getFormContentByMode = () => {
-    switch (formMode) {
-      case FormMode.Start:
-        return <MainFormStart></MainFormStart>
-      case FormMode.Registration:
-        return <MainFormRegistration></MainFormRegistration>
-      case FormMode.Login:
-        return <MainFormLoginWithPassword></MainFormLoginWithPassword>
-    }
-  }
-  const jsx = getFormContentByMode()
-
   return (
     <Main>
       <StyledMobileBanner
@@ -133,7 +115,7 @@ export default function MainForm() {
         <br />
         <p>現在，請立即加入，成為我們的會員，體驗有質量、無干擾的新聞閱讀。</p>
       </Intro>
-      <CustomFormWrapper>{jsx}</CustomFormWrapper>
+      <MainFormStart FormContainer={CustomFormWrapper} />
     </Main>
   )
 }

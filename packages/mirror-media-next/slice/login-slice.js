@@ -42,8 +42,6 @@ const FormState = /** @type {const} */ ({
 const Google = 'Google'
 const Facebook = 'Facebook'
 const Apple = 'Apple'
-const Email = 'email'
-const Default = ''
 /**
  * @readonly
  */
@@ -51,22 +49,18 @@ const AuthMethod = /** @type {const} */ ({
   Google,
   Facebook,
   Apple,
-  Email,
-  Default,
 })
 
 /**
  * Type for state
  * @typedef {Form | LoginSuccess | LoginFail | RegisterSuccess | RegisterFail} LoginFormState
  * @typedef {Start | Registration | Login} LoginFormMode
- * @typedef {Google | Facebook | Apple | Email | Default} PrevAuthMethod
  */
 
 /**
  * @typedef {Object} InitialState
  * @property {LoginFormState} state - 頁面狀態
  * @property {LoginFormMode} loginFormMode - 頁面狀態為 Form 的情況下，對話框的狀態
- * @property {PrevAuthMethod} prevAuthMethod - 先前登入所使用的方法
  * @property {boolean} shouldShowHintOfExitenceOfDifferentAuthMethod - 是否顯示已使用其他方式註冊的提示
  * @property {string} email - 輸入的 E-mail
  * @property {string} password - 輸入的密碼
@@ -77,7 +71,6 @@ const AuthMethod = /** @type {const} */ ({
 const initialState = {
   state: FormState.Form,
   loginFormMode: FormMode.Start,
-  prevAuthMethod: AuthMethod.Default,
   shouldShowHintOfExitenceOfDifferentAuthMethod: false,
   email: '',
   password: '',
@@ -94,12 +87,6 @@ const loginState = (
    */
   state
 ) => state.login.state
-const loginPrevAuthMethod = (
-  /**
-   * @type {AppState}
-   */
-  state
-) => state.login.prevAuthMethod
 const loginShouldShowHintOfExitenceOfDifferentAuthMethod = (
   /**
    * @type {AppState}
@@ -176,15 +163,6 @@ const loginSlice = createSlice({
     clearPassword: (state) => {
       state.password = ''
     },
-    changePrevAuthMethod: (
-      state,
-      /**
-       * @type {PayloadAction<PrevAuthMethod>}
-       */
-      action
-    ) => {
-      state.prevAuthMethod = action.payload
-    },
     changeShouldShowHintOfExitenceOfDifferentAuthMethod: (
       state,
       /**
@@ -205,7 +183,6 @@ const loginSlice = createSlice({
     },
     resetLoginState: (state) => {
       state.state = FormState.Form
-      state.prevAuthMethod = AuthMethod.Default
       state.shouldShowHintOfExitenceOfDifferentAuthMethod = false
       state.email = ''
       state.password = ''
@@ -220,23 +197,10 @@ const loginSlice = createSlice({
     goToLoginForm: (state) => {
       state.state = FormState.Form
       state.loginFormMode = FormMode.Login
-      state.prevAuthMethod = AuthMethod.Email
     },
     goToRegistrationForm: (state) => {
       state.state = FormState.Form
       state.loginFormMode = FormMode.Registration
-    },
-    setSignInWithGoogle: (state) => {
-      state.prevAuthMethod = AuthMethod.Google
-      state.shouldShowHintOfExitenceOfDifferentAuthMethod = true
-    },
-    setSignInWithFacebook: (state) => {
-      state.prevAuthMethod = AuthMethod.Facebook
-      state.shouldShowHintOfExitenceOfDifferentAuthMethod = true
-    },
-    setSignInWithApple: (state) => {
-      state.prevAuthMethod = AuthMethod.Apple
-      state.shouldShowHintOfExitenceOfDifferentAuthMethod = true
     },
   },
 })
@@ -249,7 +213,6 @@ export {
   loginFormMode,
   loginIsFederatedRedirectResultLoading,
   loginPassword,
-  loginPrevAuthMethod,
   loginShouldShowHintOfExitenceOfDifferentAuthMethod,
   loginState,
 }

@@ -5,12 +5,14 @@ import { PRIVACY_POLICY_URL, SERVICE_RULE_URL } from '../../constants/url'
 import StyledLink from './styled-link'
 
 const Reminder = styled.section`
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 21px;
+  line-height: 150%;
   color: rgba(0, 0, 0, 0.5);
+  text-align: left;
 `
 
+/** @returns {import('react').ReactElement} */
 export default function ReminderSection() {
   return (
     <Reminder>

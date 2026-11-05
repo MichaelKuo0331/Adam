@@ -1,10 +1,6 @@
 import { useEffect } from 'react'
 import { FirebaseError } from 'firebase/app'
-import {
-  fetchSignInMethodsForEmail,
-  getAdditionalUserInfo,
-  getRedirectResult,
-} from 'firebase/auth'
+import { getAdditionalUserInfo, getRedirectResult } from 'firebase/auth'
 import styled from 'styled-components'
 
 import LoginFailed from '../../components/login/login-failed'
@@ -18,12 +14,7 @@ import { useMembership } from '../../context/membership'
 import { auth } from '../../firebase'
 import useRedirect from '../../hooks/use-redirect'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
-import {
-  AuthMethod,
-  FormState,
-  loginActions,
-  loginState,
-} from '../../slice/login-slice'
+import { FormState, loginActions, loginState } from '../../slice/login-slice'
 import { getLogTraceObject } from '../../utils'
 import { fetchHeaderDataInDefaultPageLayout } from '../../utils/api'
 import { setPageCache } from '../../utils/cache-setting'
@@ -68,21 +59,6 @@ export default function Login({ headerData, isWebview }) {
     }
 
     const handleFederatedRedirectResult = async () => {
-      function getPrevAuthMethod(prevAuthMethod) {
-        switch (prevAuthMethod) {
-          case 'google.com':
-            return AuthMethod.Google
-          case 'facebook.com':
-            return AuthMethod.Facebook
-          case 'apple.com':
-            return AuthMethod.Apple
-          case 'password':
-            return AuthMethod.Email
-          default:
-            return prevAuthMethod
-        }
-      }
-
       try {
         const redirectResult = await getRedirectResult(auth)
         if (redirectResult && redirectResult?.user) {
@@ -100,14 +76,7 @@ export default function Login({ headerData, isWebview }) {
           e instanceof FirebaseError &&
           e.code === FirebaseAuthError.ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL
         ) {
-          const email =
-            e?.customData?.email && typeof e?.customData?.email === 'string'
-              ? e?.customData?.email
-              : ''
-          const responseArray = await fetchSignInMethodsForEmail(auth, email)
-          const prevAuthMethod = getPrevAuthMethod(responseArray?.[0])
-
-          dispatch(loginActions.changePrevAuthMethod(prevAuthMethod))
+          dispatch(loginActions.goToStart())
           dispatch(
             loginActions.changeShouldShowHintOfExitenceOfDifferentAuthMethod(
               true

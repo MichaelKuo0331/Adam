@@ -1,43 +1,105 @@
-import { useState } from 'react'
-import { fetchSignInMethodsForEmail } from 'firebase/auth'
+import { useRef, useState } from 'react'
 import styled from 'styled-components'
 
 import { InputState } from '../../constants/form'
-import { auth } from '../../firebase'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
 import {
   AuthMethod,
+  FormMode,
   loginActions,
-  loginEmail,
+  loginFormMode,
   loginIsFederatedRedirectResultLoading,
-  loginPrevAuthMethod,
   loginShouldShowHintOfExitenceOfDifferentAuthMethod,
 } from '../../slice/login-slice'
-import { isCompanyEmail, isValidEmail } from '../../utils'
-import PrimaryButton from '../shared/buttons/primary-button'
 import CenteredHint from '../shared/centered-hint'
 
 import ButtonLoginWithThirdParty from './button-login-with-third-party'
-import EmailInput from './email-input'
+import FormWrapper from './form-wrapper'
+import MainFormLoginWithPassword from './main-form-login-with-password'
+import MainFormRegistration from './main-form-registration'
 import ReminderSection from './reminder-section'
 
-/**
- * @typedef {import('./button-login-with-third-party').ThirdPartyName} ThirdPartyName
- */
+/** @typedef {{ $active: boolean }} ActiveProps */
 
-/**
- * @type { {name: ThirdPartyName}[]}
- */
+/** @type {{ name: import('./button-login-with-third-party').ThirdPartyName }[]} */
 const THIRD_PARTY_LIST = [
   { name: AuthMethod.Facebook },
   { name: AuthMethod.Google },
   { name: AuthMethod.Apple },
 ]
 
-const ThirdPartyButtonGroup = styled.div`
+const ThirdPartyButtonGroup = styled.fieldset`
   display: flex;
   flex-direction: column;
   row-gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+`
+
+const ModeSwitch = styled.div`
+  display: flex;
+  width: 100%;
+  margin-bottom: 24px;
+`
+
+const ModeButton = styled.button`
+  flex: 1;
+  height: 56px;
+  padding: 12px 16px;
+  border: 0;
+  background: ${
+    /** @param {ActiveProps} props */
+    ({ $active }) => ($active ? '#054f77' : '#fff')
+  };
+  color: ${
+    /** @param {ActiveProps} props */
+    ({ $active }) => ($active ? '#fff' : '#054f77')
+  };
+  /* Inset ring outlines the inactive tab without shifting layout */
+  box-shadow: ${
+    /** @param {ActiveProps} props */
+    ({ $active }) => ($active ? 'none' : 'inset 0 0 0 1px #054f77')
+  };
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 150%;
+  cursor: ${
+    /** @param {ActiveProps} props */
+    ({ $active }) => ($active ? 'default' : 'pointer')
+  };
+  transition: background-color 0.15s ease;
+
+  &:first-child {
+    border-radius: 8px 0 0 8px;
+  }
+
+  &:last-child {
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* Tint the outlined tab on hover so it reads as clickable */
+  &:hover:not(:disabled) {
+    background: ${
+      /** @param {ActiveProps} props */
+      ({ $active }) => ($active ? '#054f77' : '#e6eef3')
+    };
+  }
+
+  &:focus-visible {
+    outline: 2px solid #054f77;
+    outline-offset: 2px;
+  }
+
+  /* Keep the normal look while the redirect check runs to avoid a flash */
+  &:disabled {
+    cursor: progress;
+  }
 `
 
 const Seperator = styled.div`
@@ -65,103 +127,137 @@ const Seperator = styled.div`
   }
 `
 
-const ControlGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  row-gap: 24px;
+const PanelStack = styled.div`
+  display: grid;
+  width: 100%;
 `
 
-export default function MainFormStart() {
-  const [isLoading, setIsLoading] = useState(false)
+const Panel = styled.section`
+  grid-area: 1 / 1;
+  align-self: start;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  visibility: ${
+    /** @param {ActiveProps} props */
+    ({ $active }) => ($active ? 'visible' : 'hidden')
+  };
+`
+
+/**
+ * @param {Object} [props]
+ * @param {import('react').ComponentType<{ children: import('react').ReactNode }>} [props.FormContainer]
+ */
+export default function MainFormStart({ FormContainer = FormWrapper } = {}) {
   const dispatch = useAppDispatch()
-  const email = useAppSelector(loginEmail)
-  const prevAuthMethod = useAppSelector(loginPrevAuthMethod)
+  const formMode = useAppSelector(loginFormMode)
+  const isRegistration = formMode === FormMode.Registration
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submissionPending = useRef(false)
   const isFederatedRedirectResultLoading = useAppSelector(
     loginIsFederatedRedirectResultLoading
   )
   const shouldShowHintOfExitenceOfDifferentAuthMethod = useAppSelector(
     loginShouldShowHintOfExitenceOfDifferentAuthMethod
   )
-  const shouldShowhintOfCompanyEmail = isCompanyEmail(email)
-  const hint = `由於您曾以 ${prevAuthMethod} 帳號登入，請點擊上方「使用 ${prevAuthMethod} 帳號繼續」重試。`
-  const hintOfCompanyEmail = `若您想以本公司企業信箱登入，請點擊上方「使用 Google 帳號繼續」重試，以享有 Premium 會員資格。`
-  const allowToContinue =
-    isValidEmail(email) &&
-    isFederatedRedirectResultLoading === false &&
-    !shouldShowhintOfCompanyEmail
-  const handleOnClick = async () => {
-    if (!allowToContinue || isLoading) return
-    setIsLoading(true)
+  const hint = '無法完成登入，請重試或改用其他登入方式。'
+  const isSwitchDisabled = isSubmitting || isFederatedRedirectResultLoading
 
-    try {
-      const responseArray = await fetchSignInMethodsForEmail(auth, email)
-
-      const isEmailExistWithEmailPasswordSignInMethod = responseArray.find(
-        (signInMethod) => signInMethod === 'password'
-      )
-
-      const isEmailHasBeenUsedByGoogleAuth = responseArray.find(
-        (signInMethod) => signInMethod === 'google.com'
-      )
-
-      const isEmailHasBeenUsedByFacebookAuth = responseArray.find(
-        (signInMethod) => signInMethod === 'facebook.com'
-      )
-
-      const isEmailHasBeenUsedByAppleAuth = responseArray.find(
-        (signInMethod) => signInMethod === 'apple.com'
-      )
-
-      if (isEmailExistWithEmailPasswordSignInMethod) {
-        dispatch(loginActions.goToLoginForm())
-      } else if (isEmailHasBeenUsedByGoogleAuth) {
-        dispatch(loginActions.setSignInWithGoogle())
-      } else if (isEmailHasBeenUsedByFacebookAuth) {
-        dispatch(loginActions.setSignInWithFacebook())
-      } else if (isEmailHasBeenUsedByAppleAuth) {
-        dispatch(loginActions.setSignInWithApple())
-      } else {
-        dispatch(loginActions.goToRegistrationForm())
-      }
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setIsLoading(false)
-    }
+  /** @param {boolean} pending */
+  const handleSubmittingChange = (pending) => {
+    submissionPending.current = pending
+    setIsSubmitting(pending)
   }
 
+  /** @param {typeof FormMode.Login | typeof FormMode.Registration} mode */
+  const handleModeChange = (mode) => {
+    if (
+      submissionPending.current ||
+      isFederatedRedirectResultLoading ||
+      isRegistration === (mode === FormMode.Registration)
+    ) {
+      return
+    }
+
+    dispatch(loginActions.clearPassword())
+    dispatch(
+      loginActions.changeShouldShowHintOfExitenceOfDifferentAuthMethod(false)
+    )
+    dispatch(
+      mode === FormMode.Login
+        ? loginActions.goToLoginForm()
+        : loginActions.goToRegistrationForm()
+    )
+  }
+
+  const modeSwitch = (
+    <ModeSwitch role="group" aria-label="選擇登入或註冊">
+      <ModeButton
+        type="button"
+        $active={!isRegistration}
+        aria-pressed={!isRegistration}
+        disabled={isSwitchDisabled}
+        onClick={() => handleModeChange(FormMode.Login)}
+      >
+        登入
+      </ModeButton>
+      <ModeButton
+        type="button"
+        $active={isRegistration}
+        aria-pressed={isRegistration}
+        disabled={isSwitchDisabled}
+        onClick={() => handleModeChange(FormMode.Registration)}
+      >
+        註冊
+      </ModeButton>
+    </ModeSwitch>
+  )
+
   return (
-    <>
-      <ThirdPartyButtonGroup>
-        {THIRD_PARTY_LIST.map((item) => (
-          <ButtonLoginWithThirdParty
-            key={item.name}
-            thirdPartyName={item.name}
+    <PanelStack key={isRegistration ? FormMode.Registration : FormMode.Login}>
+      <Panel
+        $active={!isRegistration}
+        aria-label="登入"
+        aria-hidden={isRegistration}
+        inert={isRegistration}
+      >
+        <FormContainer>
+          {modeSwitch}
+          <ThirdPartyButtonGroup
+            aria-label="第三方登入"
+            disabled={isSubmitting}
+          >
+            {THIRD_PARTY_LIST.map((item) => (
+              <ButtonLoginWithThirdParty
+                key={item.name}
+                thirdPartyName={item.name}
+              />
+            ))}
+            {shouldShowHintOfExitenceOfDifferentAuthMethod && (
+              <CenteredHint $state={InputState.Invalid}>{hint}</CenteredHint>
+            )}
+          </ThirdPartyButtonGroup>
+          <Seperator>
+            <span>或</span>
+          </Seperator>
+          <MainFormLoginWithPassword
+            onSubmittingChange={handleSubmittingChange}
           />
-        ))}
-        {shouldShowHintOfExitenceOfDifferentAuthMethod && (
-          <CenteredHint $state={InputState.Invalid}>{hint}</CenteredHint>
-        )}
-        {shouldShowhintOfCompanyEmail && (
-          <CenteredHint $state={InputState.Invalid}>
-            {hintOfCompanyEmail}
-          </CenteredHint>
-        )}
-      </ThirdPartyButtonGroup>
-      <Seperator>
-        <span>或</span>
-      </Seperator>
-      <ControlGroup>
-        <EmailInput shouldShowHint={false} />
-        <PrimaryButton
-          isLoading={isLoading}
-          disabled={!allowToContinue}
-          onClick={handleOnClick}
-        >
-          下一步
-        </PrimaryButton>
-        <ReminderSection />
-      </ControlGroup>
-    </>
+          <ReminderSection />
+        </FormContainer>
+      </Panel>
+      <Panel
+        $active={isRegistration}
+        aria-label="註冊"
+        aria-hidden={!isRegistration}
+        inert={!isRegistration}
+      >
+        <FormContainer>
+          {modeSwitch}
+          <MainFormRegistration onSubmittingChange={handleSubmittingChange} />
+          <ReminderSection />
+        </FormContainer>
+      </Panel>
+    </PanelStack>
   )
 }

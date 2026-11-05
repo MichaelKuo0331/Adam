@@ -1,50 +1,34 @@
-import { useState } from 'react'
-
 import { InputState } from '../../constants/form'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
 import { loginActions, loginEmail } from '../../slice/login-slice'
-import { isValidEmail } from '../../utils'
+import { isCompanyEmail, isValidEmail } from '../../utils'
 import GenericTextInput from '../shared/inputs/generic-text-input'
 
-// following comments is required since these variables are used by comments but not codes.
-/* eslint-disable-next-line no-unused-vars */
-const { Start, Invalid, Valid } = InputState
-
-/** @typedef {Start | Invalid | Valid} EmailInputState */
-
 /**
- * @param {Object} props
- * @param {boolean} [props.shouldShowHint=true] - 是否在顯示提示訊息
+ * @param {Object} [props]
+ * @param {boolean} [props.shouldShowHint=true]
  */
-export default function EmailInput({ shouldShowHint = true }) {
-  const invalidMessage = shouldShowHint ? '請輸入有效的 Email 地址' : ''
-  const validMessage = shouldShowHint ? 'Email 格式正確' : ''
-
-  const getValidality = (/** @type {string} */ email) => {
-    if (email === '') {
-      return InputState.Start
-    } else {
-      if (isValidEmail(email)) {
-        return InputState.Valid
-      } else {
-        return InputState.Invalid
-      }
-    }
-  }
-
+export default function EmailInput({ shouldShowHint = true } = {}) {
   const dispatch = useAppDispatch()
   const email = useAppSelector(loginEmail)
-  /** @type {[EmailInputState, import('react').Dispatch<import('react').SetStateAction<EmailInputState>>]} */
-  const [state, setState] = useState(getValidality(email))
+  const hasValidFormat = isValidEmail(email)
+  const shouldUseGoogle = hasValidFormat && isCompanyEmail(email)
+  const invalidMessage = shouldShowHint
+    ? shouldUseGoogle
+      ? '若您想以本公司企業信箱登入，請點擊上方「以 Google 帳號繼續」重試，以享有 Premium 會員資格。'
+      : '請輸入有效的 Email 地址'
+    : ''
+  const validMessage = shouldShowHint ? 'Email 格式正確' : ''
+  const state =
+    email === ''
+      ? InputState.Start
+      : hasValidFormat && !shouldUseGoogle
+        ? InputState.Valid
+        : InputState.Invalid
 
   /** @type {import('react').ChangeEventHandler<HTMLInputElement>} */
   const handleInputChange = (e) => {
-    const inputValue = e.target.value
-
-    if (shouldShowHint) {
-      setState(getValidality(inputValue))
-    }
-    dispatch(loginActions.setEmail(inputValue))
+    dispatch(loginActions.setEmail(e.target.value))
   }
 
   return (

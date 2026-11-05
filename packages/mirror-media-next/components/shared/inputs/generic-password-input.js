@@ -79,6 +79,7 @@ const Toggle = styled.button`
  * @param {string} [props.incompleteMessage] - 輸入未完成的提示
  * @param {string} [props.invalidMessage] - 輸入錯誤的提示
  * @param {string} [props.validMessage] - 輸入正確的提示
+ * @param {boolean} [props.showInvalidBorder=true] - Whether invalid state marks the input border.
  * @param {import('react').ChangeEventHandler<HTMLInputElement>} props.onChange - input 數值變動處理
  */
 export default function GenericPasswordInput({
@@ -88,6 +89,7 @@ export default function GenericPasswordInput({
   incompleteMessage,
   invalidMessage,
   validMessage,
+  showInvalidBorder = true,
   onChange,
 }) {
   const [isConcealed, setIsConealed] = useState(true)
@@ -95,7 +97,10 @@ export default function GenericPasswordInput({
 
   return (
     <Wrapper>
-      <Group $isInvalid={state === InputState.Invalid} $isFocus={isFocus}>
+      <Group
+        $isInvalid={showInvalidBorder && state === InputState.Invalid}
+        $isFocus={isFocus}
+      >
         <Input
           type={isConcealed ? 'password' : 'text'}
           value={value}
