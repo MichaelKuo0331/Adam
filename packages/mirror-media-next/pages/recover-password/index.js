@@ -30,9 +30,9 @@ import redirectToDestinationWhileAuthed from '../../utils/server-side-only/redir
 
 // following comments is required since these variables are used by comments but not codes.
 /* eslint-disable-next-line no-unused-vars */
-const { DEFAULT, NOT_REGISRATED, ERROR, IN_PROGRESS, SUCCESS } = HINT_STATE
+const { DEFAULT, ERROR, IN_PROGRESS, SUCCESS } = HINT_STATE
 
-/** @typedef {DEFAULT | NOT_REGISRATED | ERROR | IN_PROGRESS | SUCCESS} HintState */
+/** @typedef {DEFAULT | ERROR | IN_PROGRESS | SUCCESS} HintState */
 
 /**
  * @typedef {Object} PageProps
@@ -142,25 +142,25 @@ export default function Login({ emailData, headerData }) {
         ...ACTION_CODE_SETTING,
         url: `${window.location.origin}/login`,
       })
-
-      setHintState(HINT_STATE.SUCCESS)
-      setAvoidSpanCooldown(AVOID_SPAM_COOLDOWN)
-      /** @type {number} */
-      const coolDownExpiredTime = Date.now() + AVOID_SPAM_COOLDOWN
-      setStorageItem(COOLDOWN_STORAGE_KEY, coolDownExpiredTime.toString())
     } catch (e) {
       if (
-        e instanceof FirebaseError &&
-        e.code === FirebaseAuthError.USER_NOT_FOUND
+        !(
+          e instanceof FirebaseError &&
+          e.code === FirebaseAuthError.USER_NOT_FOUND
+        )
       ) {
-        setHintState(HINT_STATE.NOT_REGISRATED)
-      } else {
         setHintState(HINT_STATE.ERROR)
+        const info = generateErrorReportInfo(e, { userEmail: email })
+        sendErrorLog(info)
+        return
       }
-
-      const info = generateErrorReportInfo(e, { userEmail: email })
-      sendErrorLog(info)
     }
+
+    setHintState(HINT_STATE.SUCCESS)
+    setAvoidSpanCooldown(AVOID_SPAM_COOLDOWN)
+    /** @type {number} */
+    const coolDownExpiredTime = Date.now() + AVOID_SPAM_COOLDOWN
+    setStorageItem(COOLDOWN_STORAGE_KEY, coolDownExpiredTime.toString())
   }
 
   // load cooldown info while page loaded
