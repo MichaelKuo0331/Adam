@@ -9,6 +9,7 @@ import { InputState } from '../../constants/form'
 import { auth } from '../../firebase'
 import useRedirect from '../../hooks/use-redirect'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
+import { isValidLoginPassword } from '../../modules/authentication/password-policy'
 import {
   FormState,
   loginActions,
@@ -16,7 +17,7 @@ import {
   loginIsFederatedRedirectResultLoading,
   loginPassword,
 } from '../../slice/login-slice'
-import { isCompanyEmail, isValidEmail, isValidPassword } from '../../utils'
+import { isCompanyEmail, isValidEmail } from '../../utils'
 import { generateErrorReportInfo } from '../../utils/log/error-log'
 import { sendErrorLog } from '../../utils/log/send-log'
 import {
@@ -92,7 +93,7 @@ export default function MainFormLoginWithPassword({ onSubmittingChange } = {}) {
   )
   const allowToSubmit =
     isValidEmail(email) &&
-    isValidPassword(password) &&
+    isValidLoginPassword(password) &&
     !isCompanyEmail(email) &&
     !isFederatedRedirectResultLoading
   const { redirect } = useRedirect()

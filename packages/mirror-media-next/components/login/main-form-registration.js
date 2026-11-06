@@ -7,6 +7,7 @@ import { FirebaseAuthError } from '../../constants/firebase'
 import { InputState } from '../../constants/form'
 import { auth } from '../../firebase'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
+import { isValidNewPassword } from '../../modules/authentication/password-policy'
 import {
   FormState,
   loginActions,
@@ -25,9 +26,7 @@ import Hint from '../shared/hint'
 
 import FormTitle from './form-title'
 import RegistartionEmailInput from './registration-email-input'
-import RegistrationPasswordInput, {
-  isValidRegistrationPassword,
-} from './registration-password-input'
+import RegistrationPasswordInput from './registration-password-input'
 
 const InputGroup = styled.div`
   display: flex;
@@ -72,7 +71,7 @@ export default function MainFormRegistration({ onSubmittingChange } = {}) {
   )
   const allowToSubmit =
     isValidEmail(email) &&
-    isValidRegistrationPassword(password) &&
+    isValidNewPassword(password) &&
     !isCompanyEmail(email) &&
     !isFederatedRedirectResultLoading
 

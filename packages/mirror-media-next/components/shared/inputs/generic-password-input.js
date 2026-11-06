@@ -5,13 +5,14 @@ import { InputState } from '../../../constants/form'
 import IconConceal from '../../../public/images-next/login/conceal.svg'
 import IconReveal from '../../../public/images-next/login/reveal.svg'
 import getHint from '../../../utils/hint'
+import Hint from '../hint'
 
 /** @typedef {import('../../../constants/form').InputStateEnum} PasswordInputState */
 
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  row-gap: 8px;
+  row-gap: 0;
   width: 100%;
   background: #fff;
 `
@@ -71,7 +72,32 @@ const Toggle = styled.button`
   }
 `
 
+// Stacks the hidden reserved text and the visible hint in one grid cell, so the
+// browser sizes the hint row from the longest message at any width or font.
+const HintArea = styled.div`
+  display: grid;
+  min-height: 40px;
+  padding: 8px 0;
+
+  > p {
+    grid-area: 1 / 1;
+    align-self: center;
+    margin: 0;
+  }
+
+  > p[aria-hidden='true'] {
+    visibility: hidden;
+  }
+`
+
 /**
+ * Password input with a persistent hint row.
+ *
+ * When `reservedHintMessage` is set, the longest possible hint is rendered
+ * invisibly underneath the visible hint, so showing, shrinking or clearing the
+ * hint never shifts the layout. Pass the longest message the field can show.
+ * Without it, CSS still reserves the standard 40px hint row.
+ *
  * @param {Object} props
  * @param {string} props.value - input 數值
  * @param {PasswordInputState} props.state - input 狀態
@@ -80,6 +106,7 @@ const Toggle = styled.button`
  * @param {string} [props.invalidMessage] - 輸入錯誤的提示
  * @param {string} [props.validMessage] - 輸入正確的提示
  * @param {boolean} [props.showInvalidBorder=true] - Whether invalid state marks the input border.
+ * @param {string} [props.reservedHintMessage]
  * @param {import('react').ChangeEventHandler<HTMLInputElement>} props.onChange - input 數值變動處理
  */
 export default function GenericPasswordInput({
@@ -90,10 +117,16 @@ export default function GenericPasswordInput({
   invalidMessage,
   validMessage,
   showInvalidBorder = true,
+  reservedHintMessage,
   onChange,
 }) {
   const [isConcealed, setIsConealed] = useState(true)
   const [isFocus, setIsFocus] = useState(false)
+  const hint = getHint(state, {
+    incompleteMessage,
+    invalidMessage,
+    validMessage,
+  })
 
   return (
     <Wrapper>
@@ -113,11 +146,14 @@ export default function GenericPasswordInput({
           {isConcealed ? <IconReveal /> : <IconConceal />}
         </Toggle>
       </Group>
-      {getHint(state, {
-        incompleteMessage,
-        invalidMessage,
-        validMessage,
-      })}
+      <HintArea role="status">
+        {reservedHintMessage && (
+          <Hint $state={InputState.Invalid} aria-hidden="true">
+            {reservedHintMessage}
+          </Hint>
+        )}
+        {hint}
+      </HintArea>
     </Wrapper>
   )
 }

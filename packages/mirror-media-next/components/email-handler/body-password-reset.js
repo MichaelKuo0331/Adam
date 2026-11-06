@@ -5,7 +5,12 @@ import styled from 'styled-components'
 
 import { InputState } from '../../constants/form'
 import { auth } from '../../firebase'
-import { getSearchParamFromApiKeyUrl, isValidPassword } from '../../utils'
+import {
+  getNewPasswordHint,
+  getNewPasswordInputState,
+  isValidNewPassword,
+} from '../../modules/authentication/password-policy'
+import { getSearchParamFromApiKeyUrl } from '../../utils'
 import { generateErrorReportInfo } from '../../utils/log/error-log'
 import { sendErrorLog } from '../../utils/log/send-log'
 import FormWrapper from '../login/form-wrapper'
@@ -22,7 +27,6 @@ const ContentBlock = styled.div`
   display: flex;
   flex-direction: column;
   row-gap: 16px;
-  margin-bottom: 24px;
 `
 
 const PrimaryText = styled.p`
@@ -36,23 +40,12 @@ export default function BodyPasswordReset() {
   const [password, setPassword] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const isSubmitting = useRef(false)
   const router = useRouter()
   const actionCode = getSearchParamFromApiKeyUrl(router.query, 'oobCode')
   const email = useRef('')
 
-  const getValidality = (/** @type {string} */ password) => {
-    if (password === '') {
-      return InputState.Start
-    } else {
-      if (isValidPassword(password)) {
-        return InputState.Valid
-      } else {
-        return InputState.Invalid
-      }
-    }
-  }
-
-  const validality = getValidality(password)
+  const validality = getNewPasswordInputState(password)
 
   /** @type {import('react').ChangeEventHandler<HTMLInputElement>} */
   const handleOnInputChange = (e) => {
@@ -60,29 +53,39 @@ export default function BodyPasswordReset() {
   }
 
   const handleOnPrimaryButtonClicked = async () => {
-    if (isProcessing) return
-
+    if (
+      !isInitialized ||
+      !isValidNewPassword(password) ||
+      isSubmitting.current
+    ) {
+      return
+    }
+    isSubmitting.current = true
     setIsProcessing(true)
 
     try {
-      if (Array.isArray(actionCode)) throw new Error('Invalid action code')
+      try {
+        if (Array.isArray(actionCode)) throw new Error('Invalid action code')
 
-      await confirmPasswordReset(auth, actionCode, password)
+        await confirmPasswordReset(auth, actionCode, password)
+      } catch (err) {
+        const errorReport = generateErrorReportInfo(err, {
+          userEmail: email.current,
+        })
+        sendErrorLog(errorReport)
 
-      router.replace('/password-change-success')
-    } catch (err) {
-      const errorReport = generateErrorReportInfo(err, {
-        userEmail: email.current,
-      })
-      sendErrorLog(errorReport)
+        await router.replace({
+          pathname: '/password-change-fail',
+          query: {
+            from: router.pathname,
+          },
+        })
+        return
+      }
 
-      router.replace({
-        pathname: '/password-change-fail',
-        query: {
-          from: router.pathname,
-        },
-      })
+      await router.replace('/password-change-success')
     } finally {
+      isSubmitting.current = false
       setIsProcessing(false)
     }
   }
@@ -123,8 +126,10 @@ export default function BodyPasswordReset() {
             <ContentBlock>
               <PrimaryText>請輸入新的密碼</PrimaryText>
               <GenericPasswordInput
-                placeholder="密碼大於 6 位數"
+                placeholder="密碼至少需 8 個字元"
                 state={validality}
+                invalidMessage={getNewPasswordHint(password)}
+                reservedHintMessage={getNewPasswordHint('')}
                 value={password}
                 onChange={handleOnInputChange}
               />
