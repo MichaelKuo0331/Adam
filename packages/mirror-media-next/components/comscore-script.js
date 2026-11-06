@@ -1,6 +1,9 @@
+import { useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import Script from 'next/script'
+
+import { useReferrer } from '../context/referrer'
 
 /**
  * Component for implement comScore script.
@@ -11,8 +14,39 @@ import Script from 'next/script'
 export default function ComScoreScript() {
   const router = useRouter()
   const { pathname } = router
+  const getReferrer = useReferrer()
   const isAmpStoryPage =
     pathname.startsWith('/story/amp/') || pathname.startsWith('/external/amp/')
+
+  // The inline script below only counts the first page load. Client-side
+  // navigations need a virtual pageview via COMSCORE.beacon (comScore SPA guide).
+  // Shallow pushes (search keyword changes) are not counted.
+  useEffect(() => {
+    if (isAmpStoryPage) return
+
+    /** @param {string} _url @param {{ shallow: boolean }} options */
+    const handleRouteChangeComplete = (_url, { shallow }) => {
+      if (shallow) return
+      window.COMSCORE?.beacon({
+        c1: '2',
+        c2: '24318560',
+        c4: window.location.href,
+        c9: getReferrer(),
+        // Otherwise the SDK appends its own c9 from document.referrer, which
+        // is stale after a client-side navigation. Must be a boolean.
+        options: {
+          enableFirstPartyCookie: 'true',
+          enableDocumentReferrerCollection: false,
+        },
+      })
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChangeComplete)
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChangeComplete)
+    }
+  }, [isAmpStoryPage, router.events, getReferrer])
+
   if (isAmpStoryPage) {
     return (
       <>
