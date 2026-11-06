@@ -6,7 +6,7 @@ import {
   useEffect,
   useRef,
 } from 'react'
-import Router from 'next/router'
+import { useRouter } from 'next/router'
 
 type GetReferrer = () => string
 
@@ -22,6 +22,7 @@ const ReferrerContext = createContext<GetReferrer>(() => document.referrer)
  * Mount it in `_app`: the refs must outlive page remounts.
  */
 function ReferrerProvider({ children }: { children: ReactNode }) {
+  const router = useRouter()
   // URL of the page currently shown.
   const currentUrlRef = useRef('')
   // URL of the page before it. Undefined until the first client-side navigation.
@@ -43,13 +44,13 @@ function ReferrerProvider({ children }: { children: ReactNode }) {
     const handleRouteChangeComplete = () => {
       currentUrlRef.current = window.location.href
     }
-    Router.events.on('beforeHistoryChange', handleBeforeHistoryChange)
-    Router.events.on('routeChangeComplete', handleRouteChangeComplete)
+    router.events.on('beforeHistoryChange', handleBeforeHistoryChange)
+    router.events.on('routeChangeComplete', handleRouteChangeComplete)
     return () => {
-      Router.events.off('beforeHistoryChange', handleBeforeHistoryChange)
-      Router.events.off('routeChangeComplete', handleRouteChangeComplete)
+      router.events.off('beforeHistoryChange', handleBeforeHistoryChange)
+      router.events.off('routeChangeComplete', handleRouteChangeComplete)
     }
-  }, [])
+  }, [router.events])
 
   // Before any client-side navigation, `document.referrer` is still correct
   // (it belongs to the full page load). Read at call time from the ref, so the
