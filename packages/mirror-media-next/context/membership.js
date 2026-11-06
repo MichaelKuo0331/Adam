@@ -7,6 +7,8 @@ import {
   removeAccessTokenFromStorage,
 } from '../utils/membership'
 
+import { useReferrer } from './referrer'
+
 /**
  * @typedef {Object} MemberInfo
  * @property {MemberType} memberType
@@ -130,6 +132,7 @@ const MembershipProvider = ({ children }) => {
     membershipReducer,
     initialMembership
   )
+  const getReferrer = useReferrer()
 
   useEffect(() => {
     let isMounted = true
@@ -152,6 +155,7 @@ const MembershipProvider = ({ children }) => {
         const errorLog = generateErrorReportInfo(err, {
           userEmail: membership.userEmail,
           firebaseId: membership.firebaseId,
+          referrer: getReferrer(),
         })
         sendErrorLog(errorLog)
 
@@ -176,6 +180,7 @@ const MembershipProvider = ({ children }) => {
         const errorLog = generateErrorReportInfo(e, {
           userEmail: membership.userEmail,
           firebaseId: membership.firebaseId,
+          referrer: getReferrer(),
         })
         sendErrorLog(errorLog)
 
@@ -241,6 +246,7 @@ const MembershipProvider = ({ children }) => {
               const errorLog = generateErrorReportInfo(error, {
                 userEmail: user.email,
                 firebaseId: user.uid,
+                referrer: getReferrer(),
               })
               sendErrorLog(errorLog)
               break
@@ -274,7 +280,7 @@ const MembershipProvider = ({ children }) => {
       isMounted = false
       unsubscribeAuthStateChanged()
     }
-  }, [])
+  }, [getReferrer])
   return (
     <MembershipContext.Provider value={membership}>
       <MembershipDispatchContext.Provider value={dispatch}>
@@ -297,7 +303,10 @@ const useMembershipDispatch = () => {
   return useContext(MembershipDispatchContext)
 }
 
-const handleFirebaseSignOut = async () => {
+/**
+ * @param {string} [referrer] - from `useReferrer`, for the error log
+ */
+const handleFirebaseSignOut = async (referrer) => {
   const [{ auth }, { signOut }] = await Promise.all([
     import('../firebase'),
     import('firebase/auth'),
@@ -310,6 +319,7 @@ const handleFirebaseSignOut = async () => {
     const errorLog = generateErrorReportInfo(error, {
       userEmail: currentUser?.email,
       firebaseId: currentUser?.uid,
+      referrer,
     })
     sendErrorLog(errorLog)
   }

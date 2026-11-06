@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 
 import { useMembership } from '../../context/membership'
+import { useReferrer } from '../../context/referrer'
 import { sendUserBehaviorLog } from '../../utils/log/send-log'
 import { generateUserBehaviorLogInfo } from '../../utils/log/user-behavior-log'
 /**
@@ -39,6 +40,9 @@ export default function UserBehaviorLogger({
 }) {
   //Since `usePathname()` is recommend to use at Next.js 13 App route, we use `useRouter` to get pathname instead to prevent unexpected error.
   const router = useRouter()
+  // Query and hash changes (utm params, in-page anchors) aren't a new pageview.
+  const pagePath = router.asPath.split(/[?#]/)[0]
+  const getReferrer = useReferrer()
 
   const {
     isLogInProcessFinished,
@@ -63,12 +67,17 @@ export default function UserBehaviorLogger({
       return
     }
 
-    const info = generateUserBehaviorLogInfo(
-      'pageview',
-      userBehaviorLogInfoPayload
-    )
+    const info = generateUserBehaviorLogInfo('pageview', {
+      ...userBehaviorLogInfoPayload,
+      referrer: getReferrer(),
+    })
     sendUserBehaviorLog(info)
-  }, [isLogInProcessFinished, userBehaviorLogInfoPayload])
+  }, [
+    isLogInProcessFinished,
+    userBehaviorLogInfoPayload,
+    pagePath,
+    getReferrer,
+  ])
 
   //exit event
   useEffect(() => {
@@ -78,7 +87,10 @@ export default function UserBehaviorLogger({
     if (!isLogInProcessFinished) {
       return
     }
-    const info = generateUserBehaviorLogInfo('exit', userBehaviorLogInfoPayload)
+    const info = generateUserBehaviorLogInfo('exit', {
+      ...userBehaviorLogInfoPayload,
+      referrer: getReferrer(),
+    })
 
     const beforeUnloadEvent = () => {
       if (ignore) {
@@ -100,7 +112,7 @@ export default function UserBehaviorLogger({
       window.removeEventListener('beforeunload', beforeUnloadEvent)
       router.events.off('beforeHistoryChange', beforeHistoryChangeEvent)
     }
-  }, [router, isLogInProcessFinished, userBehaviorLogInfoPayload])
+  }, [router, isLogInProcessFinished, userBehaviorLogInfoPayload, getReferrer])
 
   //click event
   useEffect(() => {
@@ -112,10 +124,10 @@ export default function UserBehaviorLogger({
       if (ignore) {
         return
       }
-      const info = generateUserBehaviorLogInfo(
-        'click',
-        userBehaviorLogInfoPayload
-      )
+      const info = generateUserBehaviorLogInfo('click', {
+        ...userBehaviorLogInfoPayload,
+        referrer: getReferrer(),
+      })
       sendUserBehaviorLog(info)
     }
     window.addEventListener('click', clickEvent)
@@ -123,7 +135,7 @@ export default function UserBehaviorLogger({
       ignore = true
       window.removeEventListener('click', clickEvent)
     }
-  }, [isLogInProcessFinished, userBehaviorLogInfoPayload])
+  }, [isLogInProcessFinished, userBehaviorLogInfoPayload, getReferrer])
 
   return null
 }

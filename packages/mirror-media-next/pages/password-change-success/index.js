@@ -7,6 +7,7 @@ import LayoutFull from '../../components/shared/layout-full'
 import { ENV } from '../../config/index.mjs'
 import { SECOND } from '../../constants/time-unit'
 import { logout } from '../../context/membership'
+import { useReferrer } from '../../context/referrer'
 import { getLogTraceObject } from '../../utils'
 import { fetchHeaderDataInDefaultPageLayout } from '../../utils/api'
 import { setPageCache } from '../../utils/cache-setting'
@@ -58,9 +59,10 @@ const SecondaryText = styled.p`
  */
 export default function PasswordChangeSuccess({ headerData }) {
   const router = useRouter()
+  const getReferrer = useReferrer()
 
   useEffect(() => {
-    logout()
+    logout(getReferrer())
 
     const task = setTimeout(
       () =>
@@ -73,7 +75,7 @@ export default function PasswordChangeSuccess({ headerData }) {
     return () => {
       clearTimeout(task)
     }
-  }, [router])
+  }, [router, getReferrer])
 
   return (
     <LayoutFull header={{ type: 'default', data: headerData }}>

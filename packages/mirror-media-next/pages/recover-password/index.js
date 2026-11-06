@@ -13,6 +13,7 @@ import { ACTION_CODE_SETTING } from '../../config/index.mjs'
 import { FirebaseAuthError } from '../../constants/firebase'
 import { InputState } from '../../constants/form'
 import { SECOND } from '../../constants/time-unit'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import { getLogTraceObject, isValidEmail } from '../../utils'
 import { fetchHeaderDataInDefaultPageLayout } from '../../utils/api'
@@ -96,6 +97,7 @@ const PrimaryButtonAndHint = styled.div`
  * @param {PageProps} props
  */
 export default function Login({ emailData, headerData }) {
+  const getReferrer = useReferrer()
   const COOLDOWN_STORAGE_KEY = 'recover-password-cooldown'
   const AVOID_SPAM_COOLDOWN = SECOND * 30
 
@@ -150,7 +152,10 @@ export default function Login({ emailData, headerData }) {
         )
       ) {
         setHintState(HINT_STATE.ERROR)
-        const info = generateErrorReportInfo(e, { userEmail: email })
+        const info = generateErrorReportInfo(e, {
+          userEmail: email,
+          referrer: getReferrer(),
+        })
         sendErrorLog(info)
         return
       }

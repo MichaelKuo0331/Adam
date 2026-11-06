@@ -4,6 +4,7 @@ import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth'
 import styled from 'styled-components'
 
 import { InputState } from '../../constants/form'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import {
   getNewPasswordHint,
@@ -42,6 +43,7 @@ export default function BodyPasswordReset() {
   const [isInitialized, setIsInitialized] = useState(false)
   const isSubmitting = useRef(false)
   const router = useRouter()
+  const getReferrer = useReferrer()
   const actionCode = getSearchParamFromApiKeyUrl(router.query, 'oobCode')
   const email = useRef('')
 
@@ -71,6 +73,7 @@ export default function BodyPasswordReset() {
       } catch (err) {
         const errorReport = generateErrorReportInfo(err, {
           userEmail: email.current,
+          referrer: getReferrer(),
         })
         sendErrorLog(errorReport)
 
@@ -103,6 +106,7 @@ export default function BodyPasswordReset() {
       } catch (err) {
         const errorReport = generateErrorReportInfo(err, {
           userEmail: email.current,
+          referrer: getReferrer(),
         })
         sendErrorLog(errorReport)
 
@@ -116,7 +120,7 @@ export default function BodyPasswordReset() {
     }
 
     checkUrlInfo()
-  }, [actionCode, isInitialized, router])
+  }, [actionCode, isInitialized, router, getReferrer])
 
   return (
     <Main>

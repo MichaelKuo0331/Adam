@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Link } from '@/components/ui/link'
 import { logout, useMembership } from '@/context/membership'
+import { useReferrer } from '@/context/referrer'
 import { useAppDispatch } from '@/hooks/useRedux'
 import { loginActions } from '@/slice/login-slice'
 import { getLoginHref } from '@/utils'
@@ -23,6 +24,7 @@ function MemberMenu() {
   const { isLoggedIn } = useMembership()
   const dispatch = useAppDispatch()
   const router = useRouter()
+  const getReferrer = useReferrer()
 
   if (!isLoggedIn) {
     return (
@@ -38,7 +40,7 @@ function MemberMenu() {
 
   function handleLogout() {
     dispatch(loginActions.resetLoginState())
-    logout()
+    logout(getReferrer())
   }
 
   return (

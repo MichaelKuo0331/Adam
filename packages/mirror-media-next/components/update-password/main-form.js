@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, updatePassword } from 'firebase/auth'
 import styled from 'styled-components'
 
 import { InputState } from '../../constants/form'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import {
   getNewPasswordHint,
@@ -45,6 +46,7 @@ const FieldLabel = styled.label`
 `
 
 export default function MainForm() {
+  const getReferrer = useReferrer()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const isSubmitting = useRef(false)
@@ -85,7 +87,10 @@ export default function MainForm() {
           oldPassword
         )
       } catch (e) {
-        const errorReport = generateErrorReportInfo(e, { userEmail: email })
+        const errorReport = generateErrorReportInfo(e, {
+          userEmail: email,
+          referrer: getReferrer(),
+        })
         sendErrorLog(errorReport)
         setOldPasswordState(InputState.Invalid)
         return
@@ -94,7 +99,10 @@ export default function MainForm() {
       try {
         await updatePassword(userCredential.user, newPassword)
       } catch (e) {
-        const errorReport = generateErrorReportInfo(e, { userEmail: email })
+        const errorReport = generateErrorReportInfo(e, {
+          userEmail: email,
+          referrer: getReferrer(),
+        })
         sendErrorLog(errorReport)
         await router.push({
           pathname: '/password-change-fail',

@@ -39,6 +39,7 @@ const formatErrorMessage = (error) => {
  * @property {string} [userEmail] - member email
  * @property {string} [firebaseId] - member firebase id
  * @property {boolean} [isMemberArticle] - whether is member article. It will only be `true` if it is on story page and is a member article.
+ * @property {string} [referrer] - previous page, from `useReferrer`. Falls back to `document.referrer`.
  */
 
 /**
@@ -51,18 +52,10 @@ const formatErrorMessage = (error) => {
  * Caution: Since this function have use Web API, such as `window.location.href`, `window.navigator.userAgent`,
  * this function should be ONLY executed at client-side.
  * @param {Error} error
- * @param {Payload} payload
+ * @param {Payload} [payload]
  * @throws {Error}
  */
-const generateErrorReportInfo = (
-  error,
-  payload = {
-    memberType: 'not-member',
-    userEmail: '',
-    firebaseId: '',
-    isMemberArticle: false,
-  }
-) => {
+const generateErrorReportInfo = (error, payload = {}) => {
   if (isServer()) throw getClientSideOnlyError('generateErrorReportInfo')
 
   const pathname = window.location.pathname
@@ -71,6 +64,7 @@ const generateErrorReportInfo = (
     userEmail = '',
     firebaseId = '',
     isMemberArticle = false,
+    referrer = document.referrer,
   } = payload
   const userAgent = window.navigator.userAgent
   const errorLog = {
@@ -93,7 +87,7 @@ const generateErrorReportInfo = (
     'screen-size': getWindowSizeInfo(),
   }
   const pageInfo = {
-    referral: document.referrer,
+    referral: referrer,
     'page-url': window.location.href,
     'page-type': getFormattedPageType(pathname, isMemberArticle),
   }
@@ -108,7 +102,7 @@ const generateErrorReportInfo = (
       httpRequest: {
         url: window.location.href,
         userAgent,
-        referrer: document.referrer,
+        referrer,
       },
     },
     errorLog,
