@@ -157,7 +157,18 @@ function MyApp({ Component, pageProps }) {
                         />
                       }
                     >
-                      <Component {...pageProps} />
+                      {/* Remount on path change so same-route navigations (story → story)
+                        don't keep the previous page's state, ad slots, or effects.
+                        Search is excluded: it shallow-pushes `/search/[keyword]`, which
+                        keeps the old pageProps, so a remount would re-query the old term. */}
+                      <Component
+                        key={
+                          router.pathname === '/search/[keyword]'
+                            ? undefined
+                            : router.asPath.split(/[?#]/)[0]
+                        }
+                        {...pageProps}
+                      />
                     </ErrorBoundary>
                     {/* Sits outside the page boundary above, so this is the only
                       thing catching it: without it, a failure in this secondary
