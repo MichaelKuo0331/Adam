@@ -158,6 +158,10 @@ export default function PostLayout(props: PostLayoutProps) {
     '(min-width: 1280px) 800px, (min-width: 768px) calc(100vw - 48px), 100vw'
   const webpSrcSet = buildSrcSet(heroImage?.resizedWebp)
   const defaultSrcSet = buildSrcSet(heroImage?.resized)
+  const rawHeroWidth = heroImage?.imageFile?.width
+  const rawHeroHeight = heroImage?.imageFile?.height
+  const heroWidth = rawHeroWidth && rawHeroHeight ? rawHeroWidth : undefined
+  const heroHeight = rawHeroWidth && rawHeroHeight ? rawHeroHeight : undefined
 
   const summary = useMemo(() => {
     return content.blocks
@@ -307,7 +311,7 @@ export default function PostLayout(props: PostLayoutProps) {
           </CopyLinkButton>
         </div>
         <figure className="order-5 col-span-full">
-          <picture className="relative block aspect-3/2">
+          <picture className="block">
             {webpSrcSet && (
               <source
                 type="image/webp"
@@ -316,7 +320,7 @@ export default function PostLayout(props: PostLayoutProps) {
               />
             )}
             <img
-              className="h-auto w-full object-cover"
+              className="h-auto w-full"
               srcSet={defaultSrcSet}
               sizes={SIZES_HERO}
               src={
@@ -326,8 +330,8 @@ export default function PostLayout(props: PostLayoutProps) {
                 DEFAULT_OG_IMAGE_URL
               }
               alt={heroCaption ?? title ?? ''}
-              width="100%"
-              height="auto"
+              width={heroWidth}
+              height={heroHeight}
               fetchPriority="high"
             />
           </picture>
