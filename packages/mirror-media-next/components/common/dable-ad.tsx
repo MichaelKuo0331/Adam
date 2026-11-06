@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Script from 'next/script'
 
 import { DABLE_WIDGET_IDS } from '@/constants/ads'
@@ -11,7 +12,18 @@ type DableAdProps = {
 }
 
 export default function DableAd({ breakpoint, className }: DableAdProps) {
-  const { matches: isDesktopWidth } = useMediaQuery(minWidth[breakpoint])
+  const { isMediaQueryResolved, matches: isDesktopWidth } = useMediaQuery(
+    minWidth[breakpoint]
+  )
+  const widgetId = isDesktopWidth ? DABLE_WIDGET_IDS.PC : DABLE_WIDGET_IDS.MB
+
+  // next/script runs the inline script below only once per session, so after a
+  // client-side navigation the remounted widget would stay empty. On first load
+  // `window.dable` doesn't exist yet (lazyOnload) and the inline script renders it.
+  useEffect(() => {
+    if (!isMediaQueryResolved) return
+    window.dable?.('renderWidget', `dablewidget_${widgetId}`)
+  }, [isMediaQueryResolved, widgetId])
 
   return (
     <>
@@ -41,13 +53,9 @@ export default function DableAd({ breakpoint, className }: DableAdProps) {
         }}
       />
       <div
-        id={`dablewidget_${
-          isDesktopWidth ? DABLE_WIDGET_IDS.PC : DABLE_WIDGET_IDS.MB
-        }`}
+        id={`dablewidget_${widgetId}`}
         className={className}
-        data-widget_id={
-          isDesktopWidth ? DABLE_WIDGET_IDS.PC : DABLE_WIDGET_IDS.MB
-        }
+        data-widget_id={widgetId}
       ></div>
     </>
   )
