@@ -120,6 +120,8 @@ packages/mirror-media-next/
 │   ├── index.tsx                       # Homepage route composition
 │   └── podcasts/index.tsx              # Podcast route composition
 ├── modules/                            # Business capabilities, shallow by default
+│   ├── authentication/
+│   │   └── password-policy.ts          # Login and new-password validation and hints
 │   ├── homepage/
 │   │   ├── homepage-types.ts           # Homepage-owned view-model types
 │   │   ├── homepage-data.ts            # Server data aggregation

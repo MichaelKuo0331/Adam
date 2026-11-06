@@ -335,16 +335,6 @@ const isValidEmail = (email) => {
 }
 
 /**
- * Verify password input
- *
- * @param {string} password
- * @returns {boolean}
- */
-const isValidPassword = (password) => {
-  return typeof password === 'string' && password.length >= 6
-}
-
-/**
  * Verify if the email is a company email
  *
  * @param {string} email
@@ -532,7 +522,6 @@ export {
   isInternalUrl,
   isServer,
   isValidEmail,
-  isValidPassword,
   sortArrayWithOtherArrayId,
   toTaipeiISOString,
   transformTimeData,
