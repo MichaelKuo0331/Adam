@@ -183,7 +183,7 @@ export function ExternalLayout(props: ExternalLayoutProps) {
             className="GTM-share-facebook"
           />
           <IconLink
-            href={`https://social-plugins.line.me/lineit/share?u=${canonicalUrl}`}
+            href={`https://social-plugins.line.me/lineit/share?url=${canonicalUrl}`}
             src={`${SITE_BASE_PATH}/images/line-logo.svg`}
             alt="line-logo"
             rel="noopener noreferrer"
