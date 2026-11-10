@@ -18,7 +18,7 @@ const Page = styled.div`
   iframe {
     display: block;
     width: 100%;
-    height: 100dvh;
+    height: calc(100dvh - 48px);
     border: 0;
   }
 `
