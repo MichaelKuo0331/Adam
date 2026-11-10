@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import Script from 'next/script'
 
 import { DABLE_WIDGET_IDS } from '@/constants/ads'
@@ -18,12 +18,20 @@ export default function DableAd({ breakpoint, className }: DableAdProps) {
   const widgetId = isDesktopWidth ? DABLE_WIDGET_IDS.PC : DABLE_WIDGET_IDS.MB
 
   // next/script runs the inline script below only once per session, so after a
-  // client-side navigation the remounted widget would stay empty. On first load
-  // `window.dable` doesn't exist yet (lazyOnload) and the inline script renders it.
+  // client-side navigation the remounted widget would stay empty and unlogged.
+  // On first load `window.dable` doesn't exist yet (lazyOnload) and the inline
+  // script handles both.
+  const renderWidget = useEffectEvent(() => {
+    window.dable?.('sendLog')
+    window.dable?.('renderWidget', `dablewidget_${widgetId}`)
+  })
+
+  // Once per mount, when the breakpoint is known. Crossing the breakpoint later
+  // keeps the widget already rendered.
   useEffect(() => {
     if (!isMediaQueryResolved) return
-    window.dable?.('renderWidget', `dablewidget_${widgetId}`)
-  }, [isMediaQueryResolved, widgetId])
+    renderWidget()
+  }, [isMediaQueryResolved])
 
   return (
     <>
