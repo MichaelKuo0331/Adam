@@ -453,6 +453,7 @@ export default function PostLayout(props: PostLayoutProps) {
           <div className="flex items-center justify-center gap-x-3 md:col-span-4 md:justify-start">
             <Link
               href="/donate"
+              target="_blank"
               className="inline-flex items-center gap-x-1 rounded-full border-mm-base-700 bg-mm-base-700 px-3 py-2 hover:bg-mm-base-600"
             >
               <CircleDollarSignIcon className="size-4 text-white" />

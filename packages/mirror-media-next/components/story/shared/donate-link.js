@@ -23,7 +23,7 @@ const Link = styled.a`
 
 export default function DonateLink({ className = '' }) {
   return (
-    <Link className={className} href="/donate">
+    <Link className={className} href="/donate" target="_blank">
       <Image
         src={'/images-next/donate.png'}
         width={13.33}
