@@ -117,14 +117,8 @@ function SiteHeader({
     const logoRowHeight = logoRowRef.current?.offsetHeight ?? 0
     const navigationRowHeight = navigationRegionRef.current?.offsetHeight ?? 0
     setStickyLayout({
-      compact: {
-        height: logoRowHeight + navigationRowHeight,
-        offset: flashNewsRowHeight,
-      },
-      desktop: {
-        height: navigationRowHeight,
-        offset: flashNewsRowHeight + logoRowHeight,
-      },
+      height: navigationRowHeight,
+      offset: flashNewsRowHeight + logoRowHeight,
     })
   }, [hasFlashNewsRow, setStickyLayout])
 
@@ -246,15 +240,7 @@ function SiteHeader({
         </div>
       )}
 
-      <div
-        className={cn(
-          'bg-white',
-          // Compact shell (<lg) sticks logo row + category row together;
-          // desktop keeps only the category row fixed, see below.
-          showStickyControls &&
-            'fixed inset-x-0 top-0 z-(--mm-z-shell-header) shadow-sm lg:static lg:z-auto lg:shadow-none'
-        )}
-      >
+      <div className="bg-white">
         <div
           className="mx-auto flex h-15 w-full max-w-7xl items-center gap-mm-2xl px-mm-2xl"
           ref={logoRowRef}
@@ -352,7 +338,7 @@ function SiteHeader({
         <div
           className={cn(
             'relative z-(--mm-z-shell-header) flex h-12 w-full items-center border-b border-mm-neutral-200 bg-white',
-            showStickyControls && 'lg:fixed lg:inset-x-0 lg:top-0'
+            showStickyControls && 'fixed inset-x-0 top-0'
           )}
           onMouseLeave={() => {
             setOpenFlyoutSlug(null)
@@ -366,10 +352,7 @@ function SiteHeader({
             {showStickyControls && (
               <NextLink
                 aria-label="回到鏡週刊首頁"
-                className={cn(
-                  'GTM-header-logo hidden shrink-0 lg:block',
-                  shellBrandLinkClass
-                )}
+                className={cn('GTM-header-logo shrink-0', shellBrandLinkClass)}
                 href="/"
               >
                 <Image
@@ -444,8 +427,8 @@ function SiteHeader({
       {showStickyControls && (
         <div
           aria-hidden="true"
-          // Must equal what left the flow: two fixed rows on compact, one on desktop.
-          className="h-27 lg:h-12"
+          // Must equal the category row that left the flow.
+          className="h-12"
         />
       )}
     </header>
