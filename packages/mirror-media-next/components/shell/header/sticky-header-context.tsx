@@ -3,13 +3,11 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 type StickyMetrics = { height: number; offset: number }
 
-type StickyLayout = { compact: StickyMetrics; desktop: StickyMetrics }
-
 type StickyHeaderContextValue = {
   showStickyControls: boolean
   // Height of the rows that stay fixed at the top once the header collapses.
   stickyHeight: number
-  // Scroll position at which the header collapses on the current breakpoint.
+  // Scroll position at which the header collapses.
   stickyOffset: number
 }
 
@@ -20,7 +18,7 @@ const StickyHeaderContext = createContext<StickyHeaderContextValue>({
 })
 
 const StickyHeaderDispatchContext = createContext<
-  Dispatch<SetStateAction<StickyLayout>>
+  Dispatch<SetStateAction<StickyMetrics>>
 >(() => {})
 
 function StickyHeaderProvider({ children }: { children: ReactNode }) {
@@ -29,33 +27,21 @@ function StickyHeaderProvider({ children }: { children: ReactNode }) {
     height: 0,
     offset: 0,
   })
-  const [stickyLayout, setStickyLayout] = useState<StickyLayout>({
-    compact: { height: 0, offset: 0 },
-    desktop: { height: 0, offset: 0 },
-  })
 
   useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 1024px)')
-
     function updateStickyState() {
-      const metrics = desktop.matches
-        ? stickyLayout.desktop
-        : stickyLayout.compact
-      setStickyMetrics(metrics)
-      setShowStickyControls(window.scrollY >= metrics.offset)
+      setShowStickyControls(window.scrollY >= stickyMetrics.offset)
     }
 
     updateStickyState()
     window.addEventListener('scroll', updateStickyState, { passive: true })
-    desktop.addEventListener('change', updateStickyState)
     return () => {
       window.removeEventListener('scroll', updateStickyState)
-      desktop.removeEventListener('change', updateStickyState)
     }
-  }, [stickyLayout])
+  }, [stickyMetrics.offset])
 
   return (
-    <StickyHeaderDispatchContext.Provider value={setStickyLayout}>
+    <StickyHeaderDispatchContext.Provider value={setStickyMetrics}>
       <StickyHeaderContext.Provider
         value={{
           showStickyControls,
