@@ -144,7 +144,12 @@ export default function MainFormLoginWithPassword({ onSubmittingChange } = {}) {
         ) {
           setPasswordErrorCode(error.code)
           try {
-            sendErrorLog(generateErrorReportInfo(error, { userEmail: email }))
+            sendErrorLog(
+              generateErrorReportInfo(error, {
+                userEmail: email,
+                referrer: getReferrer(),
+              })
+            )
           } catch (loggingError) {
             console.error(
               'Unable to report Firebase sign-in rate limit.',
