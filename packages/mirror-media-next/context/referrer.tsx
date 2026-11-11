@@ -37,7 +37,11 @@ function ReferrerProvider({ children }: { children: ReactNode }) {
     // Read `currentUrlRef`, not `window.location.href`: on back/forward the
     // browser changes the URL before this fires, so `location` would already
     // be the destination page.
-    const handleBeforeHistoryChange = () => {
+    const handleBeforeHistoryChange = (
+      _url: string,
+      { shallow }: { shallow: boolean }
+    ) => {
+      if (shallow) return
       referrerRef.current = currentUrlRef.current
     }
     // Record the page we just arrived on, for the next navigation.
