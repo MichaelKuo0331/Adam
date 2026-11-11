@@ -21,7 +21,6 @@ function TopicIndexCard({ item }: TopicIndexCardProps) {
     <NextLink
       className="mx-auto flex w-full max-w-82.5 flex-col gap-mm-m md:mx-0 md:w-70 md:max-w-70 md:shrink-0"
       href={`/topic/${item.slug}`}
-      target="_blank"
     >
       <div className="relative h-46.5 max-h-46.5 w-full overflow-hidden">
         <Image

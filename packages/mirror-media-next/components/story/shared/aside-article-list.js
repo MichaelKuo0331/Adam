@@ -294,7 +294,7 @@ export default function AsideArticleList({
       <li key={item.id}>
         {isLoaded ? (
           <Article>
-            <Link href={articleHref} target="_blank" className="article-image">
+            <Link href={articleHref} className="article-image">
               <Image
                 images={item?.heroImage?.resized}
                 imagesWebP={item?.heroImage?.resizedWebp}
@@ -306,7 +306,7 @@ export default function AsideArticleList({
             </Link>
 
             <FigureCaption>
-              <Link href={articleHref} target="_blank">
+              <Link href={articleHref}>
                 <Title color={headingColor}>{item.title}</Title>
               </Link>
             </FigureCaption>

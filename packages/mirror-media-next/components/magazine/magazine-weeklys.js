@@ -178,11 +178,7 @@ export default function MagazineWeeklys({ weeklys }) {
     <CardsList>
       {weeklys.map((magazine) => (
         <IssueCard key={magazine.id}>
-          <Link
-            href={getMagazineHrefFromSlug(magazine.slug)}
-            rel="noopener"
-            target="_blank"
-          >
+          <Link href={getMagazineHrefFromSlug(magazine.slug)}>
             <ImageWrapper>
               <Image
                 images={magazine.coverPhoto?.resized}

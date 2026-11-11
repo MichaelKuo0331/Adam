@@ -5,6 +5,7 @@ import styled from 'styled-components'
 
 import { FirebaseAuthError } from '../../constants/firebase'
 import { InputState } from '../../constants/form'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
 import { isValidNewPassword } from '../../modules/authentication/password-policy'
@@ -62,6 +63,7 @@ const ControlGroup = styled.div`
  */
 export default function MainFormRegistration({ onSubmittingChange } = {}) {
   const dispatch = useAppDispatch()
+  const getReferrer = useReferrer()
   const [isLoading, setIsLoading] = useState(false)
   const isSubmitting = useRef(false)
   const email = useAppSelector(loginEmail)
@@ -111,6 +113,7 @@ export default function MainFormRegistration({ onSubmittingChange } = {}) {
       ) {
         errorHandler(e instanceof Error ? e : new Error(String(e)), {
           userEmail: email,
+          referrer: getReferrer(),
         })
       }
       dispatch(loginActions.changeState(FormState.RegisterFail))

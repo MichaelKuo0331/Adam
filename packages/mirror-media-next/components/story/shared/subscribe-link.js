@@ -22,7 +22,7 @@ const Link = styled.a`
 
 export default function SubscribeLink({ className = '' }) {
   return (
-    <Link className={className} href="/subscribe" target="_blank">
+    <Link className={className} href="/subscribe">
       <span>加入訂閱會員</span>
     </Link>
   )

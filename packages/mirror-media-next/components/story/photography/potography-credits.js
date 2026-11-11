@@ -108,13 +108,7 @@ export default function Credits({ credits }) {
               {Array.isArray(people) ? (
                 people.map((person) => (
                   <li key={person.id} className="link">
-                    <Link
-                      target="_blank"
-                      rel="noopenner"
-                      href={`/author/${person.id}`}
-                    >
-                      {person.name}
-                    </Link>
+                    <Link href={`/author/${person.id}`}>{person.name}</Link>
                   </li>
                 ))
               ) : (

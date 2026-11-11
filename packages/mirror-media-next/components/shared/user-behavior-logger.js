@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
 
 import { useMembership } from '../../context/membership'
+import { useReferrer } from '../../context/referrer'
 import { sendUserBehaviorLog } from '../../utils/log/send-log'
 import { generateUserBehaviorLogInfo } from '../../utils/log/user-behavior-log'
 /**
@@ -39,6 +40,12 @@ export default function UserBehaviorLogger({
 }) {
   //Since `usePathname()` is recommend to use at Next.js 13 App route, we use `useRouter` to get pathname instead to prevent unexpected error.
   const router = useRouter()
+  // Query and hash changes (utm params, in-page anchors) aren't a new pageview.
+  // Only updated by non-shallow navigations to a different path; the pageview
+  // effect below depends on it, so a change here sends the next pageview.
+  // Shallow pushes (search keyword changes) stay on the same pageview.
+  const [pagePath, setPagePath] = useState(() => router.asPath.split(/[?#]/)[0])
+  const getReferrer = useReferrer()
 
   const {
     isLogInProcessFinished,
@@ -59,16 +66,33 @@ export default function UserBehaviorLogger({
 
   //pageview event
   useEffect(() => {
+    /** @param {string} url @param {{ shallow: boolean }} options */
+    const handleRouteChangeComplete = (url, { shallow }) => {
+      if (shallow) return
+      setPagePath(url.split(/[?#]/)[0])
+    }
+    router.events.on('routeChangeComplete', handleRouteChangeComplete)
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChangeComplete)
+    }
+  }, [router.events])
+
+  useEffect(() => {
     if (!isLogInProcessFinished) {
       return
     }
 
-    const info = generateUserBehaviorLogInfo(
-      'pageview',
-      userBehaviorLogInfoPayload
-    )
+    const info = generateUserBehaviorLogInfo('pageview', {
+      ...userBehaviorLogInfoPayload,
+      referrer: getReferrer(),
+    })
     sendUserBehaviorLog(info)
-  }, [isLogInProcessFinished, userBehaviorLogInfoPayload])
+  }, [
+    isLogInProcessFinished,
+    userBehaviorLogInfoPayload,
+    pagePath,
+    getReferrer,
+  ])
 
   //exit event
   useEffect(() => {
@@ -78,7 +102,10 @@ export default function UserBehaviorLogger({
     if (!isLogInProcessFinished) {
       return
     }
-    const info = generateUserBehaviorLogInfo('exit', userBehaviorLogInfoPayload)
+    const info = generateUserBehaviorLogInfo('exit', {
+      ...userBehaviorLogInfoPayload,
+      referrer: getReferrer(),
+    })
 
     const beforeUnloadEvent = () => {
       if (ignore) {
@@ -87,8 +114,9 @@ export default function UserBehaviorLogger({
       hasBeforeUnloadEventTriggered = true
       sendUserBehaviorLog(info)
     }
-    const beforeHistoryChangeEvent = () => {
-      if (ignore || hasBeforeUnloadEventTriggered) {
+    /** @param {string} _url @param {{ shallow: boolean }} options */
+    const beforeHistoryChangeEvent = (_url, { shallow }) => {
+      if (ignore || hasBeforeUnloadEventTriggered || shallow) {
         return
       }
       sendUserBehaviorLog(info)
@@ -100,7 +128,7 @@ export default function UserBehaviorLogger({
       window.removeEventListener('beforeunload', beforeUnloadEvent)
       router.events.off('beforeHistoryChange', beforeHistoryChangeEvent)
     }
-  }, [router, isLogInProcessFinished, userBehaviorLogInfoPayload])
+  }, [router, isLogInProcessFinished, userBehaviorLogInfoPayload, getReferrer])
 
   //click event
   useEffect(() => {
@@ -112,10 +140,10 @@ export default function UserBehaviorLogger({
       if (ignore) {
         return
       }
-      const info = generateUserBehaviorLogInfo(
-        'click',
-        userBehaviorLogInfoPayload
-      )
+      const info = generateUserBehaviorLogInfo('click', {
+        ...userBehaviorLogInfoPayload,
+        referrer: getReferrer(),
+      })
       sendUserBehaviorLog(info)
     }
     window.addEventListener('click', clickEvent)
@@ -123,7 +151,7 @@ export default function UserBehaviorLogger({
       ignore = true
       window.removeEventListener('click', clickEvent)
     }
-  }, [isLogInProcessFinished, userBehaviorLogInfoPayload])
+  }, [isLogInProcessFinished, userBehaviorLogInfoPayload, getReferrer])
 
   return null
 }

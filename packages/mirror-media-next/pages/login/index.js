@@ -11,6 +11,7 @@ import WebviewHint from '../../components/login/webview-hint'
 import LayoutFull from '../../components/shared/layout-full'
 import { FirebaseAuthError } from '../../constants/firebase'
 import { useMembership } from '../../context/membership'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import useRedirect from '../../hooks/use-redirect'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
@@ -49,6 +50,7 @@ const Container = styled.div`
  */
 export default function Login({ headerData, isWebview }) {
   const dispatch = useAppDispatch()
+  const getReferrer = useReferrer()
   const { accessToken, isLogInProcessFinished, userEmail } = useMembership()
   const loginFormState = useAppSelector(loginState)
   const { redirect } = useRedirect()
@@ -83,7 +85,7 @@ export default function Login({ headerData, isWebview }) {
             )
           )
         } else {
-          errorHandler(e, { userEmail })
+          errorHandler(e, { userEmail, referrer: getReferrer() })
           dispatch(loginActions.changeState(FormState.LoginFail))
         }
       } finally {
@@ -99,6 +101,7 @@ export default function Login({ headerData, isWebview }) {
     dispatch,
     userEmail,
     isWebview,
+    getReferrer,
   ])
 
   const getBodyByState = () => {

@@ -6,6 +6,7 @@ import styled from 'styled-components'
 
 import { FirebaseAuthError } from '../../constants/firebase'
 import { InputState } from '../../constants/form'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import useRedirect from '../../hooks/use-redirect'
 import { useAppDispatch, useAppSelector } from '../../hooks/useRedux'
@@ -86,6 +87,7 @@ const ControlGroup = styled.div`
  */
 export default function MainFormLoginWithPassword({ onSubmittingChange } = {}) {
   const dispatch = useAppDispatch()
+  const getReferrer = useReferrer()
   const email = useAppSelector(loginEmail)
   const password = useAppSelector(loginPassword)
   const isFederatedRedirectResultLoading = useAppSelector(
@@ -142,7 +144,12 @@ export default function MainFormLoginWithPassword({ onSubmittingChange } = {}) {
         ) {
           setPasswordErrorCode(error.code)
           try {
-            sendErrorLog(generateErrorReportInfo(error, { userEmail: email }))
+            sendErrorLog(
+              generateErrorReportInfo(error, {
+                userEmail: email,
+                referrer: getReferrer(),
+              })
+            )
           } catch (loggingError) {
             console.error(
               'Unable to report Firebase sign-in rate limit.',
@@ -176,6 +183,7 @@ export default function MainFormLoginWithPassword({ onSubmittingChange } = {}) {
     } catch (e) {
       errorHandler(e instanceof Error ? e : new Error(String(e)), {
         userEmail: email,
+        referrer: getReferrer(),
       })
       dispatch(loginActions.changeState(FormState.LoginFail))
     } finally {

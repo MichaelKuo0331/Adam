@@ -34,7 +34,6 @@ export function AsideArticleItem({
          */
         ''
       )}
-      target="_blank"
     >
       <div className="relative h-[114px] w-40 shrink-0">
         <Image

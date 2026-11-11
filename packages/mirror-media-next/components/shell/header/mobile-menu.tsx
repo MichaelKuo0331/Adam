@@ -208,8 +208,6 @@ function MobileMenu({ navigation, topics }: MobileMenuProps) {
               href={link.href}
               key={link.label}
               onClick={closeMenu}
-              rel={link.rel}
-              target={link.target}
             >
               {link.label}
             </NextLink>

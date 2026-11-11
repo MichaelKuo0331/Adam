@@ -1,5 +1,11 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import {
+  Component,
+  type ContextType,
+  type ErrorInfo,
+  type ReactNode,
+} from 'react'
 
+import { ReferrerContext } from '../../context/referrer'
 import { generateErrorReportInfo } from '../../utils/log/error-log'
 import { sendErrorLog } from '../../utils/log/send-log'
 
@@ -24,6 +30,9 @@ export default class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
+  static contextType = ReferrerContext
+  declare context: ContextType<typeof ReferrerContext>
+
   state: ErrorBoundaryState = { hasError: false }
 
   static getDerivedStateFromError(): ErrorBoundaryState {
@@ -40,7 +49,9 @@ export default class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     try {
-      const errorLog = generateErrorReportInfo(error)
+      const errorLog = generateErrorReportInfo(error, {
+        referrer: this.context(),
+      })
       sendErrorLog({
         ...errorLog,
         boundary: this.props.boundary,

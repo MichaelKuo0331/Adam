@@ -1,6 +1,9 @@
+import { useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import Script from 'next/script'
+
+import { useReferrer } from '../context/referrer'
 
 /**
  * Component for implement comScore script.
@@ -11,8 +14,56 @@ import Script from 'next/script'
 export default function ComScoreScript() {
   const router = useRouter()
   const { pathname } = router
+  const getReferrer = useReferrer()
   const isAmpStoryPage =
     pathname.startsWith('/story/amp/') || pathname.startsWith('/external/amp/')
+
+  // Sends the first pageview on mount and a virtual pageview on each client-side
+  // navigation (comScore SPA guide). Shallow pushes (search keyword changes) are
+  // not counted.
+  useEffect(() => {
+    if (isAmpStoryPage) return
+
+    const sendPageview = () => {
+      const pageview = {
+        c1: '2',
+        c2: '24318560',
+        c4: window.location.href,
+        c7: window.location.href,
+        c8: document.title,
+        c9: getReferrer(),
+        // The SDK would read URL, title and referrer when it processes the
+        // pageview, which for a queued one is after the user has moved on.
+        // Capture them now instead. Must be booleans.
+        options: {
+          enableFirstPartyCookie: true,
+          enableDocumentUrlCollection: false,
+          enableDocumentTitleCollection: false,
+          enableDocumentReferrerCollection: false,
+        },
+      }
+      if (window.COMSCORE) {
+        window.COMSCORE.beacon(pageview)
+      } else {
+        // beacon.js (lazyOnload) replays this queue once when it loads.
+        ;(window._comscore = window._comscore || []).push(pageview)
+      }
+    }
+
+    sendPageview()
+
+    /** @param {string} _url @param {{ shallow: boolean }} options */
+    const handleRouteChangeComplete = (_url, { shallow }) => {
+      if (shallow) return
+      sendPageview()
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChangeComplete)
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChangeComplete)
+    }
+  }, [isAmpStoryPage, router.events, getReferrer])
+
   if (isAmpStoryPage) {
     return (
       <>
@@ -54,7 +105,6 @@ export default function ComScoreScript() {
         dangerouslySetInnerHTML={{
           __html: `
             var _comscore = _comscore || [];
-            _comscore.push({ c1: "2", c2: "24318560" ,  options: { enableFirstPartyCookie: "true" } });
             (function() {
               var s = document.createElement("script"), el = document.getElementsByTagName("script")[0]; s.async = true;
               s.src = "https://sb.scorecardresearch.com/cs/24318560/beacon.js";

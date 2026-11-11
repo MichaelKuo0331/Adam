@@ -4,7 +4,7 @@ import type { RawDraftContentState } from 'draft-js'
 
 import { cn } from '@/components/cn'
 import { Link, Typography } from '@/components/ui'
-import { isInternalUrl } from '@/utils'
+import { isInternalUrl, isSiteUrl } from '@/utils'
 
 import { EmbeddedCode } from './blocks-components/embedded-code'
 import { LilithAtomicBlock } from './blocks-components/lilith-atomic-block'
@@ -134,8 +134,8 @@ export function renderTextWithLinks(
         key={`link-${start}`}
         href={href}
         data-story-list={isInternalLink ? 'referral_bottom' : undefined}
-        target="_blank"
-        rel={isInternalLink ? 'noopener' : 'noreferrer noopener'}
+        target={isSiteUrl(url) ? undefined : '_blank'}
+        rel={isInternalLink ? undefined : 'noreferrer noopener'}
         className={cn('font-mm-body text-mm-body-l', linkClassName)}
       >
         {content}

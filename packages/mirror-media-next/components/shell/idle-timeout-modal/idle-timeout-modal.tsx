@@ -12,7 +12,7 @@ import { API_TIMEOUT, URL_STATIC_POPULAR_NEWS } from '@/config/index.mjs'
 import { IDLE_MODAL_LINK } from '@/constants'
 import { CUSTOMER_SERVICE_INFOS } from '@/constants/footer'
 import { useIdleTimeout } from '@/hooks/use-idle-timeout'
-import { isInternalUrl } from '@/utils'
+import { isInternalUrl, isSiteUrl } from '@/utils'
 
 const IDLE_TIMEOUT = 60 * 2 * 1000 // 2 minutes in milliseconds
 
@@ -100,11 +100,11 @@ function IdleTimeoutModal({
                       <a
                         key={index}
                         href={link.href}
-                        target="_blank"
+                        target={isSiteUrl(link.href) ? undefined : '_blank'}
                         className="grow-1"
                         rel={
                           isInternalUrl(link.href)
-                            ? 'noopener'
+                            ? undefined
                             : 'noopener noreferrer'
                         }
                       >

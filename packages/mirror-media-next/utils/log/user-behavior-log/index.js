@@ -22,6 +22,7 @@ import {
  * @property {string} firebaseId - member firebase id
  * @property {boolean} isMemberArticle - whether is member article. It will only be `true` if it is on story page and is a member article.
  * @property {string} writers - story writer
+ * @property {string} [referrer] - previous page, from `useReferrer`. Falls back to `document.referrer`.
  */
 
 /**
@@ -29,19 +30,10 @@ import {
  * Caution: Since this function have use Web API, such as `window.location.href`, `window.navigator.userAgent`,
  * this function should be ONLY executed at client-side.
  * @param {EventType} eventType
- * @param {Payload} payload
+ * @param {Partial<Payload>} [payload]
  * @throws {Error}
  */
-const generateUserBehaviorLogInfo = (
-  eventType,
-  payload = {
-    memberType: 'not-member',
-    userEmail: '',
-    firebaseId: '',
-    isMemberArticle: false,
-    writers: '',
-  }
-) => {
+const generateUserBehaviorLogInfo = (eventType, payload = {}) => {
   if (isServer()) throw getClientSideOnlyError('generateUserBehaviorLogInfo')
 
   const pathname = window.location.pathname
@@ -51,7 +43,8 @@ const generateUserBehaviorLogInfo = (
     userEmail = '',
     firebaseId = '',
     isMemberArticle = false,
-    writers,
+    writers = '',
+    referrer = document.referrer,
   } = payload
   const userAgent = window.navigator.userAgent
   const triggerEvent = {
@@ -71,7 +64,7 @@ const generateUserBehaviorLogInfo = (
     'screen-size': getWindowSizeInfo(),
   }
   const pageInfo = {
-    referral: document.referrer,
+    referral: referrer,
     'page-url': window.location.href,
     'page-type': getFormattedPageType(pathname, isMemberArticle),
   }

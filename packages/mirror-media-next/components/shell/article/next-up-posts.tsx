@@ -64,7 +64,6 @@ export function NextUpPosts({
             <Link
               data-story-list="referral_bottom"
               href={`/${postItem.type}/${postItem.slug}`}
-              target="_blank"
               className={cn(
                 'grid grid-cols-[90px_1fr] items-center gap-x-4 md:grid-cols-[96px_1fr]',
                 'article-title GTM-story-related-list',

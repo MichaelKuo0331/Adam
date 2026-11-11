@@ -6,6 +6,7 @@ import styled from 'styled-components'
 
 import { FirebaseAuthError } from '../../constants/firebase'
 import { useMembership } from '../../context/membership'
+import { useReferrer } from '../../context/referrer'
 import { auth } from '../../firebase'
 import { getSearchParamFromApiKeyUrl } from '../../utils'
 import { generateErrorReportInfo } from '../../utils/log/error-log'
@@ -67,6 +68,7 @@ export default function BodyEmailVerification() {
   const { isLoggedIn, userEmail, firebaseId, memberInfo } = useMembership()
   const [errorType, setErrorType] = useState('')
   const router = useRouter()
+  const getReferrer = useReferrer()
   const actionCode = getSearchParamFromApiKeyUrl(router.query, 'oobCode')
   const [verificationState, setVerificationState] = useState(
     !actionCode || Array.isArray(actionCode)
@@ -96,11 +98,12 @@ export default function BodyEmailVerification() {
           userEmail,
           firebaseId,
           memberType: memberInfo?.memberType,
+          referrer: getReferrer(),
         })
 
         sendErrorLog(errorReport)
       })
-  }, [actionCode, userEmail, firebaseId, memberInfo])
+  }, [actionCode, userEmail, firebaseId, memberInfo, getReferrer])
 
   const getFailedContent = () => {
     const SecondaryBlock = (

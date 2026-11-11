@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { NEWEBPAY_PAPERMAG_API_URL } from '../../config/index.mjs'
 import { RECEIPT_OPTION } from '../../constants/papermag'
 import { SECOND } from '../../constants/time-unit'
+import { useReferrer } from '../../context/referrer'
 import { generateErrorReportInfo } from '../../utils/log/error-log'
 import { sendErrorLog } from '../../utils/log/send-log'
 import {
@@ -94,6 +95,7 @@ const RightWrapper = styled.div`
  */
 export default function SubscribePaperMagForm({ plan }) {
   const router = useRouter()
+  const getReferrer = useReferrer()
   const formMerchantIDRef = useRef(/** @type {HTMLInputElement} */ (null))
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -301,7 +303,9 @@ export default function SubscribePaperMagForm({ plan }) {
     } catch (err) {
       setIsProcessing(false)
 
-      const errorReport = generateErrorReportInfo(err)
+      const errorReport = generateErrorReportInfo(err, {
+        referrer: getReferrer(),
+      })
       sendErrorLog(errorReport)
 
       return

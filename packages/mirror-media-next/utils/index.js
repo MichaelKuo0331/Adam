@@ -462,6 +462,21 @@ const isInternalUrl = (url) => {
   }
 }
 
+/**
+ * Whether a link points at the current site's host, for deciding `target`:
+ * any other host, including other `mirrormedia.mg` subdomains, opens in a new
+ * tab. `rel` still uses `isInternalUrl`, so subdomains keep the referrer.
+ * @param {string} url
+ * @returns {boolean}
+ */
+const isSiteUrl = (url) => {
+  try {
+    return new URL(url, `https://${SITE_URL}`).hostname === SITE_URL
+  } catch {
+    return false
+  }
+}
+
 const isServer = () => {
   return typeof window === 'undefined' ? true : false
 }
@@ -521,6 +536,7 @@ export {
   isCompanyEmail,
   isInternalUrl,
   isServer,
+  isSiteUrl,
   isValidEmail,
   sortArrayWithOtherArrayId,
   toTaipeiISOString,

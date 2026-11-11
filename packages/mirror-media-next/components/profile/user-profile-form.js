@@ -10,6 +10,7 @@ import client from '../../apollo/apollo-client'
 import { updateMember } from '../../apollo/membership/mutation/member'
 import { fetchMemberProfile } from '../../apollo/membership/query/member'
 import { useMembership } from '../../context/membership'
+import { useReferrer } from '../../context/referrer'
 import { MODE } from '../../pages/profile'
 import { generateErrorReportInfo } from '../../utils/log/error-log'
 import { sendErrorLog } from '../../utils/log/send-log'
@@ -260,6 +261,7 @@ const getGenderKey = (/** @type {String} */ value) => {
  * @returns {import('react').JSX.Element}
  */
 export default function UserProfileForm({ onSaved, signInProvider }) {
+  const getReferrer = useReferrer()
   const [userName, setUserName] = useState('')
   const [userGender, setUserGender] = useState('')
   const [userYear, setUserYear] = useState('')
@@ -324,6 +326,7 @@ export default function UserProfileForm({ onSaved, signInProvider }) {
           userEmail: userEmail,
           firebaseId: firebaseId,
           memberType: memberType,
+          referrer: getReferrer(),
         })
         sendErrorLog(errorReport)
         router.push('/500')
@@ -332,7 +335,7 @@ export default function UserProfileForm({ onSaved, signInProvider }) {
     if (firebaseId && accessToken) {
       getMemberProfile()
     }
-  }, [firebaseId, accessToken, memberType, userEmail, router])
+  }, [firebaseId, accessToken, memberType, userEmail, router, getReferrer])
 
   const cityNames = useMemo(() => {
     return taiwanDisTrictOptions.map((data) => {
@@ -396,6 +399,7 @@ export default function UserProfileForm({ onSaved, signInProvider }) {
         userEmail: userEmail,
         firebaseId: firebaseId,
         memberType: memberType,
+        referrer: getReferrer(),
       })
       sendErrorLog(errorReport)
       onSaved(MODE.FAIL)

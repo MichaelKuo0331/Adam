@@ -15,7 +15,7 @@ import {
   LINE_LINK,
   MESH_LINK,
 } from '@/constants'
-import { isInternalUrl } from '@/utils'
+import { isInternalUrl, isSiteUrl } from '@/utils'
 
 const {
   AI_GUIDANCE,
@@ -89,9 +89,9 @@ function SiteFooter() {
                 href={link.href}
                 key={link.name}
                 rel={
-                  isInternalUrl(link.href) ? 'noopener' : 'noopener noreferrer'
+                  isInternalUrl(link.href) ? undefined : 'noopener noreferrer'
                 }
-                target="_blank"
+                target={isSiteUrl(link.href) ? undefined : '_blank'}
               >
                 {link.title}
               </NextLink>

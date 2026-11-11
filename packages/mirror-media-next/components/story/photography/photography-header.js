@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import styled from 'styled-components'
 
 import { DONATION_PAGE_URL } from '../../../config/index.mjs'
@@ -90,7 +91,7 @@ export default function Header() {
   return (
     <Nav>
       <LogoWrapper>
-        <a href="/" target="_blank" rel="noopenner">
+        <Link href="/">
           <Image
             src="/images-next/weekly-logo-white.svg"
             alt="mirror media logo"
@@ -98,7 +99,7 @@ export default function Header() {
             width={90}
             height={38}
           />
-        </a>
+        </Link>
       </LogoWrapper>
       <IconsWrapper>
         <a href={DONATION_PAGE_URL} target="_blank" rel="noreferrer noopenner">

@@ -31,7 +31,6 @@ export function ArticleListItem({
           ? `/external/${item.slug}`
           : `/story/${item.slug}`
       }
-      target="_blank"
     >
       <div className="relative mb-mm-l aspect-[330/220] w-full sm:mb-0 sm:aspect-auto sm:h-[127px] sm:w-[179px] sm:shrink-0">
         <Image

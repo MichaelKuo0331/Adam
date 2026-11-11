@@ -122,8 +122,6 @@ function HeadlineList({
                 )}
                 data-story-list={storyList}
                 href={item.article.href}
-                rel="noopener"
-                target="_blank"
               >
                 <span className="relative block h-16 w-24 overflow-hidden bg-mm-neutral-100">
                   <ArticleImage

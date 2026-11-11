@@ -406,8 +406,6 @@ function SiteHeader({
                   key={link.label}
                   onFocus={() => setOpenFlyoutSlug(null)}
                   onMouseEnter={() => setOpenFlyoutSlug(null)}
-                  rel={link.rel}
-                  target={link.target}
                 >
                   {link.label}
                 </NextLink>

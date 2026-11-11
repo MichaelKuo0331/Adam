@@ -140,7 +140,6 @@ export default function RelatedArticleList({ relateds }) {
           <Article>
             <Link
               href={`/story/${related.slug}`}
-              target="_blank"
               className={`article-image GTM-story-related-list ${
                 related.isMesoRecommend
                   ? 'GTM-story-related-miso'
@@ -170,9 +169,7 @@ export default function RelatedArticleList({ relateds }) {
                   : 'GTM-story-related-editor'
               }`}
             >
-              <Link href={`/story/${related.slug}`} target="_blank">
-                {related.title}
-              </Link>
+              <Link href={`/story/${related.slug}`}>{related.title}</Link>
             </figcaption>
           </Article>
         </li>
