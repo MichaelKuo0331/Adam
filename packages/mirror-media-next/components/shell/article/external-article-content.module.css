@@ -69,7 +69,7 @@
   line-height: 1.5;
 }
 
-.content blockquote {
+.content blockquote:not([class*='text-post']) {
   color: rgba(97, 184, 198, 1);
   border-image: linear-gradient(
       to right,
@@ -80,8 +80,12 @@
     )
     100% 1;
 }
-.content blockquote::before {
+.content blockquote:not([class*='text-post'])::before {
   background-color: rgba(97, 184, 198, 1);
+}
+/* embed.js 會在 blockquote 旁插入 iframe。這個 blockquote 自帶 border，藏起來才不會多一框。 */
+.content blockquote[class*='text-post'] {
+  display: none;
 }
 
 .content img {
