@@ -14,7 +14,6 @@ const THREADS_BLOCKQUOTE =
   '<blockquote\\b[^>]*\\bclass=["\'][^"\']*\\btext-post[\\w-]*\\b[^"\']*["\'][^>]*>[\\s\\S]*?<\\/blockquote>'
 const EMBED_SOURCE = [
   `(?:<div\\b[^>]*>\\s*){0,2}${THREADS_BLOCKQUOTE}(?:\\s*<script\\b[^>]*>[\\s\\S]*?<\\/script>)?(?:\\s*<\\/div>){0,2}`,
-  '<script\\b[^>]*\\bsrc=["\'][^"\']*threads\\.(?:com|net)\\/embed\\.js[^"\']*["\'][^>]*>[\\s\\S]*?<\\/script>',
   '<iframe[\\s\\S]*?<\\/iframe>',
 ].join('|')
 
@@ -27,8 +26,9 @@ function embedKind(part: string): 'iframe' | 'threads' | null {
   const trimmed = part.trim()
   if (/^<iframe\b/i.test(trimmed)) return 'iframe'
   if (
-    /^<script\b/i.test(trimmed) ||
-    /<blockquote\b[^>]*\bclass=["'][^"']*\btext-post[\w-]*\b/i.test(trimmed)
+    /^(?:<div\b[^>]*>\s*){0,2}<blockquote\b[^>]*\bclass=["'][^"']*\btext-post[\w-]*\b/i.test(
+      trimmed
+    )
   ) {
     return 'threads'
   }
