@@ -26,9 +26,7 @@ function embedKind(part: string): 'iframe' | 'threads' | null {
   const trimmed = part.trim()
   if (/^<iframe\b/i.test(trimmed)) return 'iframe'
   if (
-    /^(?:<div\b[^>]*>\s*){0,2}<blockquote\b[^>]*\bclass=["'][^"']*\btext-post[\w-]*\b/i.test(
-      trimmed
-    )
+    /<blockquote\b[^>]*\bclass=["'][^"']*\btext-post[\w-]*\b/i.test(trimmed)
   ) {
     return 'threads'
   }
