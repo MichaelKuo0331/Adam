@@ -28,7 +28,6 @@ export default function ComScoreScript() {
       const pageview = {
         c1: '2',
         c2: '24318560',
-        c4: window.location.href,
         c7: window.location.href,
         c8: document.title,
         c9: getReferrer(),
