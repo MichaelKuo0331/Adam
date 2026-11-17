@@ -13,6 +13,7 @@ import { CopyLinkButton } from './copy-link-button'
 import { IconLink } from './icon-link'
 import { PublicDate } from './public-date'
 import { RelativePostLink } from './relative-post-link'
+import { SubscribeInviteBanner } from './subscribe-invite-banner'
 import { type ElementVariantProps, ThemeElement } from './theme-element'
 
 /** 手機文中廣告只接在第 1、第 5 段有文字的內文後面。 */
@@ -502,21 +503,7 @@ export default function PostLayout(props: PostLayoutProps) {
             ))}
           </ul>
         </div>
-        <ThemeElement
-          as="section"
-          theme="accent"
-          className="order-12 col-span-full mx-2 rounded-lg p-8 pb-10 text-lg md:mx-0"
-        >
-          鏡週刊掌握趨勢，領先一步：
-          從國際大事到生活小確幸，我們確保您不錯過任何一個重要瞬間，誠摯邀請您
-          <Link
-            href="https://www.mirrormedia.mg/login?destination=https%3A%2F%2Fwww.mirrormedia.mg%2Fmagazine"
-            className="text-lg text-mm-second-200 underline"
-          >
-            立即加入閱讀
-          </Link>
-          。
-        </ThemeElement>
+        <SubscribeInviteBanner className="order-12 col-span-full mx-2 md:mx-0" />
         <div className="order-13 col-span-full">{renderDable?.()}</div>
       </article>
 
